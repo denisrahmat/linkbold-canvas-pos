@@ -80,16 +80,43 @@
   if (warungCard && !document.getElementById('quickWarungBar')) {
     const quickBar = document.createElement('div');
     quickBar.id = 'quickWarungBar';
-    quickBar.className = 'grid grid-cols-3 gap-1.5 mt-2 pt-2 border-t border-slate-800';
-    quickBar.innerHTML = `<button type="button" id="btnQuickMaps" class="bg-slate-800 text-sky-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">📍 Buka Maps</button><button type="button" id="btnQuickWaWarung" class="bg-slate-800 text-emerald-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">💬 Chat WA</button><button type="button" id="btnCatatVisit" class="bg-amber-500/20 text-amber-300 text-[10px] font-bold py-1.5 rounded-lg border border-amber-500/40">📝 Visit No-Order</button>`;
+    quickBar.className = 'grid grid-cols-4 gap-1 mt-2 pt-2 border-t border-slate-800';
+    quickBar.innerHTML = `<button type="button" id="btnQuickMaps" class="bg-slate-800 text-sky-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">📍 Maps</button><button type="button" id="btnLockGps" class="bg-slate-800 text-rose-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">📌 Kunci GPS</button><button type="button" id="btnQuickWaWarung" class="bg-slate-800 text-emerald-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">💬 Chat WA</button><button type="button" id="btnCatatVisit" class="bg-amber-500/20 text-amber-300 text-[10px] font-bold py-1.5 rounded-lg border border-amber-500/40">📝 Visit No-Order</button>`;
     warungCard.appendChild(quickBar);
 
     const getActiveWarung = () => (state.warung || []).find(w => w.nama === state.activeWarung) || { nama: state.activeWarung || 'Warung' };
 
     document.getElementById('btnQuickMaps').onclick = () => {
       const w = getActiveWarung();
-      const q = encodeURIComponent((w.nama || '') + ' ' + (w.alamat || state.rute || 'Cipanas Cianjur'));
-      window.open('https://www.google.com/maps/search/?api=1&query=' + q, '_blank');
+      if (w.lat && w.lng) {
+        window.open(`https://www.google.com/maps/search/?api=1&query=${w.lat},${w.lng}`, '_blank');
+      } else {
+        const q = encodeURIComponent((w.nama || '') + ' ' + (w.alamat || state.rute || 'Cipanas Cianjur'));
+        window.open('https://www.google.com/maps/search/?api=1&query=' + q, '_blank');
+      }
+    };
+
+    document.getElementById('btnLockGps').onclick = () => {
+      const w = getActiveWarung();
+      if (!w || !w.nama) return alert('Pilih warung terlebih dahulu.');
+      if (!navigator.geolocation) return alert('GPS tidak didukung di browser ini.');
+      const btn = document.getElementById('btnLockGps');
+      btn.textContent = '⏳ GPS...';
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          w.lat = pos.coords.latitude.toFixed(6);
+          w.lng = pos.coords.longitude.toFixed(6);
+          if (typeof save === 'function') save();
+          btn.textContent = '✅ Terkunci';
+          setTimeout(() => { btn.textContent = '📌 Kunci GPS'; }, 2000);
+          alert(`✅ Titik lokasi GPS ${w.nama} berhasil dikunci!\nKoordinat: ${w.lat}, ${w.lng}\n\nTombol 📍 Maps sekarang akan langsung mengarah tepat ke depan warung ini.`);
+        },
+        (err) => {
+          btn.textContent = '📌 Kunci GPS';
+          alert('Gagal mengambil lokasi GPS. Pastikan Lokasi/GPS HP aktif dan izinkan akses lokasi di Chrome.');
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
     };
 
     document.getElementById('btnQuickWaWarung').onclick = () => {
