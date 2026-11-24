@@ -195,119 +195,57 @@
 })();
 
 (function(){
-  // 1. Tombol Toggle Pelacakan GPS Live Sales di Header
-  const hdrBar = document.querySelector('header .flex.items-center.gap-1');
-  let trackTimer = null;
-
-  const haversineKm = (lat1, lon1, lat2, lon2) => {
-    const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  };
-
-  const recordSalesPoint = (label, silent) => {
-    if (!navigator.geolocation) return !silent && alert('GPS tidak didukung di browser ini.');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = parseFloat(pos.coords.latitude.toFixed(6));
-        const lng = parseFloat(pos.coords.longitude.toFixed(6));
-        const jam = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        if (!Array.isArray(state.salesTrack)) state.salesTrack = [];
-        const prev = state.salesTrack[0];
-        const dist = prev ? haversineKm(prev.lat, prev.lng, lat, lng) : 0;
-        state.salesTrack.unshift({ lat, lng, jam, label: label || 'Titik Rute', km: parseFloat(dist.toFixed(2)) });
-        if (state.salesTrack.length > 60) state.salesTrack.pop();
-        if (typeof save === 'function') save();
-        if (!silent) alert(`🛰️ Posisi Sales Tercatat!\nKoordinat: ${lat}, ${lng}\nPukul: ${jam}`);
-      },
-      () => { if (!silent) alert('Aktifkan GPS/Lokasi HP dan izinkan akses lokasi di Chrome.'); },
-      { enableHighAccuracy: true, timeout: 10000 }
+  const jalankanResetPenjualan = () => {
+    const pil = prompt(
+      "RESET DATA APLIKASI LINK BOLD\n(Daftar Produk & Harga TETAP AMAN tidak dihapus)\n\nPilih opsi (ketik 1 atau 2):\n1. Reset Hasil Penjualan Saja (Omzet, Nota, Piutang & Biaya jadi 0 — Produk & Warung tetap ada)\n2. Reset Hasil Penjualan + Data Warung (Omzet 0 & Daftar Warung dikosongkan — Produk tetap ada)",
+      "1"
     );
+    if (!pil) return;
+    if (pil.trim() === "1") {
+      if (!confirm("Reset semua hasil penjualan (omzet, nota, piutang, biaya) menjadi Rp 0?\nDaftar produk & warung tetap aman.")) return;
+      state.transaksi = [];
+      state.arsipBulanan = [];
+      state.biayaOps = [];
+      state.kunjunganLog = [];
+      state.salesTrack = [];
+      if (Array.isArray(state.warung)) state.warung.forEach(w => { w.piutang = 0; });
+      if (typeof save === 'function') save();
+      alert("✅ Hasil penjualan berhasil di-reset ke Rp 0! Daftar produk & warung tetap utuh.");
+      location.reload();
+    } else if (pil.trim() === "2") {
+      if (!confirm("Reset semua hasil penjualan DAN kosongkan daftar warung?\nDaftar produk & harga tetap aman.")) return;
+      state.transaksi = [];
+      state.arsipBulanan = [];
+      state.biayaOps = [];
+      state.kunjunganLog = [];
+      state.salesTrack = [];
+      state.warung = [];
+      state.activeWarung = "";
+      if (typeof save === 'function') save();
+      alert("✅ Hasil penjualan & daftar warung berhasil dikosongkan! Daftar produk tetap utuh.");
+      location.reload();
+    }
   };
 
-  if (hdrBar && !document.getElementById('btnTrackSales')) {
-    const btnT = document.createElement('button');
-    btnT.type = 'button';
-    btnT.id = 'btnTrackSales';
-    btnT.className = 'bg-slate-800 text-cyan-300 border border-slate-700 text-[10px] font-bold px-2 py-1 rounded-lg';
-    btnT.textContent = '🛰️ Lacak';
-    hdrBar.appendChild(btnT);
-
-    btnT.onclick = () => {
-      if (trackTimer) {
-        clearInterval(trackTimer);
-        trackTimer = null;
-        btnT.textContent = '🛰️ Lacak';
-        btnT.className = 'bg-slate-800 text-cyan-300 border border-slate-700 text-[10px] font-bold px-2 py-1 rounded-lg';
-        alert('Pelacakan otomatis dihentikan.');
-      } else {
-        recordSalesPoint('Mulai Lacak Rute', false);
-        trackTimer = setInterval(() => recordSalesPoint('Checkpoint Otomatis', true), 180000);
-        btnT.textContent = '🛰️ Live';
-        btnT.className = 'bg-cyan-600 text-white text-[10px] font-bold px-2 py-1 rounded-lg animate-pulse';
-      }
-    };
+  const btnSimpanProfil = document.querySelector('#modalProfilSales button[onclick="simpanProfilSales()"]');
+  if (btnSimpanProfil && !document.getElementById('btnResetProfil')) {
+    const bR = document.createElement('button');
+    bR.type = 'button';
+    bR.id = 'btnResetProfil';
+    bR.className = 'w-full bg-red-50 text-red-600 border border-red-200 font-extrabold py-2.5 rounded-xl text-xs mt-1';
+    bR.textContent = '🗑️ Reset Penjualan / Data Warung (Produk Aman)';
+    bR.onclick = jalankanResetPenjualan;
+    btnSimpanProfil.insertAdjacentElement('afterend', bR);
   }
 
-  // Rekam otomatis titik posisi setiap kali sales menyimpan transaksi baru
-  const origSave = window.save;
-  let lastTxCount = Array.isArray(state.transaksi) ? state.transaksi.length : 0;
-  window.save = function() {
-    origSave.apply(this, arguments);
-    const curCount = Array.isArray(state.transaksi) ? state.transaksi.length : 0;
-    if (curCount > lastTxCount) {
-      lastTxCount = curCount;
-      const latest = state.transaksi[0];
-      recordSalesPoint(`Order: ${latest?.warung || 'Warung'}`, true);
-    }
-    renderTrackBox();
-  };
-
-  // 2. Panel Pelacakan Posisi & Share Live Location ke WA di Tab Analitik & Setor
-  const opsBox = document.getElementById('opsRuteBox');
-  if (opsBox && !document.getElementById('salesTrackBox')) {
-    const tBox = document.createElement('div');
-    tBox.id = 'salesTrackBox';
-    tBox.className = 'bg-cyan-50/70 border border-cyan-200 rounded-xl p-2.5 space-y-1.5 text-xs';
-    tBox.innerHTML = `
-      <div class="flex justify-between items-center">
-        <span class="font-extrabold text-slate-800">🛰️ Posisi & Jejak Rute Sales</span>
-        <span id="trackTotalKm" class="text-[10px] font-black bg-cyan-600 text-white px-2 py-0.5 rounded-full">0 km</span>
-      </div>
-      <div id="trackLatestInfo" class="text-[10px] text-slate-600">Belum ada titik GPS terekam hari ini.</div>
-      <div class="grid grid-cols-2 gap-1.5 pt-1">
-        <button type="button" id="btnUpdateGpsNow" class="bg-slate-900 text-white text-[10px] font-bold py-1.5 rounded-lg">📍 Catat Posisi Kini</button>
-        <button type="button" id="btnShareLocWa" class="bg-emerald-600 text-white text-[10px] font-bold py-1.5 rounded-lg">📲 Kirim Posisi WA</button>
-      </div>`;
-    opsBox.insertAdjacentElement('afterend', tBox);
-
-    document.getElementById('btnUpdateGpsNow').onclick = () => recordSalesPoint('Check-in Manual', false);
-
-    document.getElementById('btnShareLocWa').onclick = () => {
-      const pts = Array.isArray(state.salesTrack) ? state.salesTrack : [];
-      if (!pts.length) return alert('Ketuk "📍 Catat Posisi Kini" terlebih dahulu untuk mengambil koordinat GPS Anda.');
-      const cur = pts[0];
-      const totKm = pts.reduce((a, b) => a + (b.km || 0), 0).toFixed(1);
-      const mapUrl = `https://www.google.com/maps?q=${cur.lat},${cur.lng}`;
-      const jejak = pts.slice(0, 5).map(p => `- ${p.jam}: ${p.label} (${p.lat}, ${p.lng})`).join('\n');
-      const msg = `*LAPORAN POSISI LIVE SALES*\nNama: *${state.salesName}*\nRute: ${state.rute || '-'}\nPosisi Terakhir (${cur.jam}): ${cur.label}\nEstimasi Jarak Rute: *${totKm} km*\n\n📍 *Link Google Maps Posisi Sales:*\n${mapUrl}\n\n*5 Jejak Titik Terakhir:*\n${jejak}`;
-      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-    };
+  const tutupBtn = document.querySelector('button[onclick="tutupBukuDanArsipkan()"]');
+  if (tutupBtn && !document.getElementById('btnResetAnalitik')) {
+    const bA = document.createElement('button');
+    bA.type = 'button';
+    bA.id = 'btnResetAnalitik';
+    bA.className = 'w-full bg-red-50 text-red-600 border border-red-200 font-bold py-2 rounded-xl text-[11px]';
+    bA.textContent = '🗑️ Reset Penjualan / Warung (Produk Tetap Aman)';
+    bA.onclick = jalankanResetPenjualan;
+    tutupBtn.insertAdjacentElement('afterend', bA);
   }
-
-  function renderTrackBox() {
-    const pts = Array.isArray(state.salesTrack) ? state.salesTrack : [];
-    const kmEl = document.getElementById('trackTotalKm');
-    const infoEl = document.getElementById('trackLatestInfo');
-    if (kmEl) kmEl.textContent = pts.reduce((a, b) => a + (b.km || 0), 0).toFixed(1) + ' km';
-    if (infoEl) {
-      if (!pts.length) {
-        infoEl.innerHTML = 'Belum ada titik GPS terekam hari ini.';
-      } else {
-        const cur = pts[0];
-        infoEl.innerHTML = `Terakhir: <strong>${cur.jam}</strong> • ${cur.label} (<a href="https://www.google.com/maps?q=${cur.lat},${cur.lng}" target="_blank" class="text-cyan-700 underline font-bold">${cur.lat}, ${cur.lng}</a>)<br><span class="text-slate-500">Total ${pts.length} titik jejak rute terekam.</span>`;
-      }
-    }
-  }
-  renderTrackBox();
 })();
