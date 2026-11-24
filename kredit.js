@@ -73,7 +73,12 @@
     } else {
       alert(`✅ Cicilan ${rp(bayarCicil)} (${metVia}) dicatat!\nSisa piutang ${t.warung}: ${rp(t.sisaPiutang)}`);
     }
-    window.save();
+    try {
+      const storageKey = Object.keys(localStorage).find(k => k.includes('linkbold')) || 'linkbold_pos_motoris_v1';
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    } catch (e) {}
+    if (typeof save === 'function') save();
+    else if (typeof window.save === 'function') window.save();
   };
 
   function enhanceKreditCards() {
