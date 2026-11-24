@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>LINK BOLD CANVAS - POS & Thermal RPP02N</title>
+  <title>LINK BOLD CANVAS - POS Pro & Analitik</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0B1120">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -36,7 +36,7 @@
             <h1 class="text-sm font-black tracking-wide leading-none">LINK BOLD</h1>
             <span class="bg-slate-800 border border-slate-700 text-sky-400 text-[9px] font-bold px-1.5 py-0.5 rounded">POS PRO</span>
           </div>
-          <p id="salesSubHeader" class="text-[10px] text-slate-400 mt-1 truncate">Denis • Rute Selatan</p>
+          <p id="salesSubHeader" class="text-[10px] text-slate-400 mt-1 truncate">Denis • Rute Selatan • puncak - perbatasan bogor</p>
         </div>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
@@ -47,12 +47,11 @@
       </div>
     </div>
 
-    <!-- WARUNG AKTIF -->
     <div class="bg-[#151E32] border border-slate-800 rounded-xl p-2 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
         <span class="text-red-400 text-xs">📍</span>
         <div class="truncate">
-          <p class="text-[9px] font-bold uppercase text-slate-400">WARUNG AKTIF:</p>
+          <p class="text-[9px] font-bold uppercase text-slate-400">WARUNG AKTIF DIKUNJUNGI:</p>
           <p id="activeWarungName" class="text-xs font-extrabold text-white truncate">Warung Barokah Jaya</p>
         </div>
       </div>
@@ -63,9 +62,8 @@
   <!-- VIEW 1: KASIR -->
   <div id="view-kasir">
     <div class="bg-white border-b border-slate-200 px-3 py-2 space-y-2 sticky top-[112px] z-20 shadow-sm">
-      <!-- Search & Barcode -->
       <div class="flex gap-1.5">
-        <input id="searchProduk" oninput="renderKatalog()" type="text" placeholder="Cari SKU atau nama produk..." class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-slate-400">
+        <input id="searchProduk" oninput="renderKatalog()" type="text" placeholder="Cari SKU atau nama produk..." class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none">
         <button onclick="bukaScannerBarcode()" class="bg-[#0F172A] text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shrink-0">📷 Scan</button>
       </div>
       <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
@@ -80,7 +78,6 @@
 
     <main class="p-3"><div id="katalogGrid" class="grid grid-cols-2 gap-2.5"></div></main>
 
-    <!-- FLOATING CART -->
     <div id="floatingCartBar" class="hidden fixed bottom-[64px] inset-x-3 bg-[#0B1120] text-white rounded-2xl p-3 shadow-xl border border-slate-800 z-30 flex items-center justify-between">
       <div>
         <p class="text-[10px] text-slate-400"><span id="cartCount">0</span> Item • <span id="cartWarungLabel">Warung</span></p>
@@ -89,6 +86,7 @@
       <button onclick="bukaCheckoutModal()" class="bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl">Bayar & Cetak →</button>
     </div>
   </div>
+
   <!-- VIEW 2: RUTE & WARUNG -->
   <div id="view-rute" class="hidden p-3 space-y-3">
     <div class="bg-white rounded-2xl p-3.5 border border-slate-200 flex justify-between items-center">
@@ -109,25 +107,72 @@
     </div>
     <div id="listStokContainer" class="space-y-2"></div>
   </div>
-
-  <!-- VIEW 4: SETORAN & RIWAYAT STRUK -->
+  <!-- VIEW 4: ANALITIK & SETORAN FULL -->
   <div id="view-setoran" class="hidden p-3 space-y-3">
-    <div class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
-      <div class="flex justify-between items-center border-b pb-2"><h2 class="text-sm font-extrabold">Rekap Setoran Kasir</h2><span id="tglSetoran" class="text-[11px] text-slate-500"></span></div>
-      <div id="ringkasanKeuangan" class="space-y-1.5 text-xs"></div>
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <button onclick="printLaporanRPP02N()" class="bg-[#0F172A] text-white font-bold py-2.5 rounded-xl text-xs">🖨️ Print Laporan</button>
-        <button onclick="kirimRekapWA()" class="bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs">📲 Kirim WA</button>
+    <!-- KARTU TARGET & KOMISI HARIAN -->
+    <div class="bg-[#0B1120] text-white rounded-2xl p-4 shadow-md space-y-2.5">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Penjualan Hari Ini vs Target</p>
+          <p id="analitikOmzetHari" class="text-lg font-black text-emerald-400 mt-0.5">Rp 0</p>
+        </div>
+        <button onclick="aturTargetKomisi()" class="bg-slate-800 border border-slate-700 text-[10px] font-bold px-2.5 py-1.5 rounded-lg text-sky-400">⚙️ Atur Target</button>
       </div>
-      <button onclick="tutupBukuHariIni()" class="w-full bg-slate-100 text-slate-600 font-semibold py-2 rounded-xl text-xs">Tutup Buku / Mulai Hari Baru</button>
+      <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+        <div id="targetProgressBar" class="bg-emerald-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <div class="flex justify-between text-[11px] text-slate-300">
+        <span id="targetPersenLabel">0% dari Target Rp 5.000.000</span>
+        <span>Komisi (<span id="komisiPersenLabel">2</span>%): <strong id="analitikKomisiHari" class="text-amber-400">Rp 0</strong></span>
+      </div>
     </div>
+
+    <!-- RINGKASAN KEUANGAN & EXPORT -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h2 class="text-sm font-extrabold">Rekap Setoran Kasir</h2>
+        <span id="tglSetoran" class="text-[11px] font-semibold text-slate-500"></span>
+      </div>
+      <div id="ringkasanKeuangan" class="space-y-1.5 text-xs"></div>
+      <div class="grid grid-cols-3 gap-1.5 pt-1">
+        <button onclick="printLaporanRPP02N()" class="bg-[#0F172A] text-white font-bold py-2.5 rounded-xl text-[11px]">🖨️ Print 58mm</button>
+        <button onclick="kirimRekapWA()" class="bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-[11px]">📲 Kirim WA</button>
+        <button onclick="exportCSV()" class="bg-blue-600 text-white font-bold py-2.5 rounded-xl text-[11px]">📊 Excel/CSV</button>
+      </div>
+      <button onclick="tutupBukuDanArsipkan()" class="w-full bg-amber-50 border border-amber-200 text-amber-800 font-bold py-2.5 rounded-xl text-xs">
+        🔒 Tutup Buku & Arsipkan Penjualan Hari Ini
+      </button>
+    </div>
+
+    <!-- REKAP TERJUAL PER VARIAN HARI INI -->
     <div class="bg-white rounded-2xl p-3.5 border border-slate-200">
-      <h3 class="text-xs font-extrabold mb-2">Riwayat Nota (Ketuk 🖨️ untuk Reprint RPP02N)</h3>
+      <h3 class="text-xs font-extrabold mb-2">Barang Keluar / Terjual Hari Ini (Per Produk)</h3>
+      <div id="rekapProdukTerjual" class="space-y-1.5 text-xs"></div>
+    </div>
+
+    <!-- ARSIP KALKULASI PENJUALAN PER HARI & TOTAL KESELURUHAN -->
+    <div class="bg-white rounded-2xl p-3.5 border border-slate-200 space-y-2.5">
+      <div class="flex justify-between items-center border-b pb-2">
+        <div>
+          <h3 class="text-xs font-extrabold">Riwayat Penjualan per Hari</h3>
+          <p class="text-[10px] text-slate-500">Akumulasi omzet seluruh hari tercatat</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[9px] uppercase font-bold text-slate-400">Total Akumulasi</p>
+          <p id="totalAkumulasiSemuaHari" class="text-xs font-black text-blue-600">Rp 0</p>
+        </div>
+      </div>
+      <div id="arsipHarianList" class="space-y-1.5 text-xs"></div>
+    </div>
+
+    <!-- RIWAYAT NOTA HARI INI -->
+    <div class="bg-white rounded-2xl p-3.5 border border-slate-200">
+      <h3 class="text-xs font-extrabold mb-2">Riwayat Nota Hari Ini (Ketuk 🖨️ untuk Reprint)</h3>
       <div id="riwayatNotaList" class="space-y-2 text-xs"></div>
     </div>
   </div>
 
-  <!-- MODAL CHECKOUT KASIR FULL FITUR -->
+  <!-- MODAL CHECKOUT -->
   <div id="checkoutModal" class="hidden fixed inset-0 bg-slate-950/75 z-50 flex items-end justify-center">
     <div class="bg-white w-full max-w-md rounded-t-3xl p-4 space-y-3 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -135,7 +180,6 @@
         <button onclick="tutupCheckoutModal()" class="w-8 h-8 rounded-full bg-slate-100 font-bold">✕</button>
       </div>
       <div id="modalCartItems" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
-
       <div class="grid grid-cols-2 gap-2 pt-2 border-t">
         <div>
           <label class="block text-[10px] font-bold text-slate-500 mb-1">Metode Pembayaran</label>
@@ -150,7 +194,6 @@
           <input id="checkoutDiskon" oninput="hitungKembalian()" type="number" min="0" value="0" class="w-full bg-slate-100 rounded-xl px-2.5 py-2 text-xs font-bold">
         </div>
       </div>
-
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label class="block text-[10px] font-bold text-slate-500 mb-1">Bonus Promo (Bks)</label>
@@ -161,19 +204,16 @@
           <input id="checkoutBayar" oninput="hitungKembalian()" type="number" min="0" placeholder="0" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-2 text-xs font-black text-emerald-900">
         </div>
       </div>
-
       <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
         <button onclick="setUangPas()" class="px-2.5 py-1 bg-slate-800 text-white rounded-lg text-[10px] font-bold shrink-0">Uang Pas</button>
         <button onclick="tambahUang(50000)" class="px-2.5 py-1 bg-slate-100 rounded-lg text-[10px] font-bold shrink-0">+50rb</button>
         <button onclick="tambahUang(100000)" class="px-2.5 py-1 bg-slate-100 rounded-lg text-[10px] font-bold shrink-0">+100rb</button>
         <button onclick="tambahUang(500000)" class="px-2.5 py-1 bg-slate-100 rounded-lg text-[10px] font-bold shrink-0">+500rb</button>
       </div>
-
       <div class="bg-slate-900 text-white rounded-2xl p-3 space-y-1">
         <div class="flex justify-between text-xs"><span class="text-slate-400">Total Tagihan:</span><span id="modalTotalBayar" class="font-black text-base text-white">Rp 0</span></div>
         <div class="flex justify-between text-xs"><span class="text-slate-400">Kembalian:</span><span id="modalKembalian" class="font-extrabold text-emerald-400">Rp 0</span></div>
       </div>
-
       <div class="grid grid-cols-2 gap-2">
         <button onclick="prosesSimpanNota('PRINT')" class="bg-red-600 text-white font-bold py-3 rounded-xl text-xs shadow-lg">🖨️ Simpan & Print RPP02N</button>
         <button onclick="prosesSimpanNota('WA')" class="bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs">📲 Simpan & Kirim WA</button>
@@ -181,7 +221,7 @@
     </div>
   </div>
 
-  <!-- MODAL SCANNER BARCODE -->
+  <!-- MODAL SCANNER -->
   <div id="scannerModal" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex flex-col items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl p-4 space-y-3 text-center">
       <h3 class="text-sm font-black">Scan Barcode / SKU Produk</h3>
@@ -196,7 +236,7 @@
     <button onclick="switchTab('rute')" id="nav-rute" class="flex flex-col items-center text-slate-500 text-[10px] font-semibold"><span>📍</span>Rute & Warung</button>
     <button onclick="switchTab('kasir')" id="nav-kasir" class="flex flex-col items-center text-red-600 text-[10px] font-bold"><span>🛍️</span>Kasir / Order</button>
     <button onclick="switchTab('stok')" id="nav-stok" class="flex flex-col items-center text-slate-500 text-[10px] font-semibold"><span>📦</span>Stok & Harga</button>
-    <button onclick="switchTab('setoran')" id="nav-setoran" class="flex flex-col items-center text-slate-500 text-[10px] font-semibold"><span>💳</span>Setoran</button>
+    <button onclick="switchTab('setoran')" id="nav-setoran" class="flex flex-col items-center text-slate-500 text-[10px] font-semibold"><span>📊</span>Analitik & Setor</button>
   </nav>
   <script>
     const initialCatalog = [
@@ -213,25 +253,22 @@
     ];
     const defaultState = {
       salesName: 'Denis', rute: 'Rute Selatan • puncak - perbatasan bogor', activeWarungId: 'w1',
+      targetHarian: 5000000, komisiPersen: 2,
       warung: [
         { id: 'w1', nama: 'Warung Barokah Jaya', alamat: 'Jl. Raya Puncak - Cipanas', piutang: 0 },
         { id: 'w2', nama: 'Toko Sinar Pagi', alamat: 'Cisarua - Perbatasan Bogor', piutang: 270000 },
         { id: 'w3', nama: 'Warung Kang Ujang', alamat: 'Pacet - Cianjur', piutang: 0 }
       ],
-      produk: initialCatalog, transaksi: [], bonusKeluar: 0
+      produk: initialCatalog, transaksi: [], arsipHarian: [], bonusKeluar: 0
     };
-    let state = JSON.parse(localStorage.getItem('linkbold_pos_pro_v1')) || defaultState;
+    let state = JSON.parse(localStorage.getItem('linkbold_pos_pro_v2')) || defaultState;
     let filterSatuan = 'Semua', filterVarian = 'Semua', cart = {};
     let btCharacteristic = null, btDevice = null, scanStream = null;
-    const save = () => { localStorage.setItem('linkbold_pos_pro_v1', JSON.stringify(state)); renderAll(); };
+    const save = () => { localStorage.setItem('linkbold_pos_pro_v2', JSON.stringify(state)); renderAll(); };
     const rp = n => 'Rp ' + (n || 0).toLocaleString('id-ID');
 
-    // --- DRIVER BLUETOOTH ESC/POS RPP02N (58MM) ---
     async function connectRPP02N() {
-      if (!navigator.bluetooth) {
-        alert('Browser ini tidak mendukung Web Bluetooth. Gunakan Google Chrome Android terbaru (atau tetap bisa cetak via Print Sistem / WA).');
-        return;
-      }
+      if (!navigator.bluetooth) return alert('Gunakan Google Chrome Android terbaru untuk Bluetooth RPP02N.');
       try {
         document.getElementById('printerLabel').textContent = 'Mencari...';
         btDevice = await navigator.bluetooth.requestDevice({
@@ -243,10 +280,7 @@
         for (const srv of services) {
           const chars = await srv.getCharacteristics();
           for (const ch of chars) {
-            if (ch.properties.write || ch.properties.writeWithoutResponse) {
-              btCharacteristic = ch;
-              break;
-            }
+            if (ch.properties.write || ch.properties.writeWithoutResponse) { btCharacteristic = ch; break; }
           }
           if (btCharacteristic) break;
         }
@@ -255,80 +289,52 @@
           document.getElementById('btnPrinterStatus').className = 'px-2.5 py-1.5 rounded-xl bg-emerald-950 border border-emerald-700 text-[10px] font-bold text-emerald-400 flex items-center gap-1';
           alert('Printer ' + (btDevice.name || 'RPP02N') + ' terhubung!');
         } else {
-          alert('Karakteristik tulis printer tidak ditemukan. Pastikan printer RPP02N menyala.');
           document.getElementById('printerLabel').textContent = 'RPP02N: Off';
         }
-      } catch (err) {
-        document.getElementById('printerLabel').textContent = 'RPP02N: Off';
-        console.warn(err);
-      }
+      } catch (e) { document.getElementById('printerLabel').textContent = 'RPP02N: Off'; }
     }
 
     function padLR(left, right, width = 32) {
       const l = String(left), r = String(right);
-      const space = Math.max(1, width - l.length - r.length);
-      return l + ' '.repeat(space) + r;
+      return l + ' '.repeat(Math.max(1, width - l.length - r.length)) + r;
     }
 
     function formatStruk58mm(trx) {
       const line = '--------------------------------\n';
-      let out = '';
-      out += '       LINK BOLD CANVAS\n';
-      out += '   POS Kanvas Rute Selatan\n';
-      out += line;
-      out += `No   : ${trx.noFaktur}\n`;
-      out += `Tgl  : ${trx.tanggal} ${trx.waktu}\n`;
-      out += `Sales: ${state.salesName}\n`;
-      out += `Toko : ${trx.warung}\n`;
-      out += line;
+      let out = '       LINK BOLD CANVAS\n   POS Kanvas Rute Selatan\n' + line;
+      out += `No   : ${trx.noFaktur}\nTgl  : ${trx.tanggal} ${trx.waktu}\nSales: ${state.salesName}\nToko : ${trx.warung}\n` + line;
       trx.items.forEach(it => {
-        out += `${it.nama.substring(0, 32)}\n`;
-        out += padLR(`${it.qty} x ${it.harga.toLocaleString('id-ID')}`, it.subtotal.toLocaleString('id-ID')) + '\n';
+        out += `${it.nama.substring(0, 32)}\n` + padLR(`${it.qty} x ${it.harga.toLocaleString('id-ID')}`, it.subtotal.toLocaleString('id-ID')) + '\n';
       });
-      out += line;
-      out += padLR('Subtotal', rp(trx.subtotal)) + '\n';
+      out += line + padLR('Subtotal', rp(trx.subtotal)) + '\n';
       if (trx.diskon > 0) out += padLR('Diskon', '-' + rp(trx.diskon)) + '\n';
-      out += padLR('TOTAL', rp(trx.total)) + '\n';
-      out += padLR(`Bayar (${trx.metode})`, rp(trx.bayar)) + '\n';
+      out += padLR('TOTAL', rp(trx.total)) + '\n' + padLR(`Bayar (${trx.metode})`, rp(trx.bayar)) + '\n';
       if (trx.metode === 'TUNAI') out += padLR('Kembali', rp(trx.kembali)) + '\n';
       if (trx.bonus > 0) out += padLR('Bonus Promo', `${trx.bonus} Bks`) + '\n';
-      out += line;
-      out += '  Terima kasih atas kerjasamanya\n';
-      out += '   Barang yang dibeli sesuai\n\n\n';
+      out += line + '  Terima kasih atas kerjasamanya\n\n\n';
       return out;
     }
 
     async function cetakKeRPP02N(teksStruk) {
       if (btCharacteristic && btDevice && btDevice.gatt.connected) {
         try {
-          const encoder = new TextEncoder();
-          const initCmd = new Uint8Array([0x1B, 0x40]); // ESC @ Init
-          const payload = encoder.encode(teksStruk);
+          const encoder = new TextEncoder(), initCmd = new Uint8Array([0x1B, 0x40]), payload = encoder.encode(teksStruk);
           const fullData = new Uint8Array(initCmd.length + payload.length);
-          fullData.set(initCmd);
-          fullData.set(payload, initCmd.length);
-          const chunkSize = 100;
-          for (let i = 0; i < fullData.length; i += chunkSize) {
-            const slice = fullData.slice(i, i + chunkSize);
-            if (btCharacteristic.properties.writeWithoutResponse) {
-              await btCharacteristic.writeValueWithoutResponse(slice);
-            } else {
-              await btCharacteristic.writeValue(slice);
-            }
+          fullData.set(initCmd); fullData.set(payload, initCmd.length);
+          for (let i = 0; i < fullData.length; i += 100) {
+            const slice = fullData.slice(i, i + 100);
+            if (btCharacteristic.properties.writeWithoutResponse) await btCharacteristic.writeValueWithoutResponse(slice);
+            else await btCharacteristic.writeValue(slice);
             await new Promise(r => setTimeout(r, 35));
           }
           return true;
-        } catch (e) {
-          alert('Gagal mengirim ke Bluetooth RPP02N, beralih ke cetak standar...');
-        }
+        } catch (e) {}
       }
-      const area = document.getElementById('thermalPrintArea');
-      area.innerHTML = `<pre style="white-space:pre-wrap;font-family:monospace;font-size:11px;line-height:1.25;">${teksStruk}</pre>`;
+      document.getElementById('thermalPrintArea').innerHTML = `<pre style="white-space:pre-wrap;font-family:monospace;font-size:11px;line-height:1.25;">${teksStruk}</pre>`;
       window.print();
       return false;
     }
 
-    // --- UI & KASIR ---
     function switchTab(tab) {
       ['rute', 'kasir', 'stok', 'setoran'].forEach(t => {
         document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
@@ -352,8 +358,7 @@
     }
 
     function addCart(sku, d) {
-      const p = state.produk.find(x => x.sku === sku);
-      const nx = (cart[sku] || 0) + d;
+      const p = state.produk.find(x => x.sku === sku), nx = (cart[sku] || 0) + d;
       if (nx <= 0) delete cart[sku];
       else if (nx > p.stok) return alert('Stok mobil tidak mencukupi!');
       else cart[sku] = nx;
@@ -369,8 +374,7 @@
         (!qSearch || p.nama.toLowerCase().includes(qSearch) || p.sku.toLowerCase().includes(qSearch) || (p.barcode && p.barcode.includes(qSearch)))
       );
       document.getElementById('katalogGrid').innerHTML = list.map(p => {
-        const [grad, badge] = styles[p.varian] || styles.Campur;
-        const q = cart[p.sku] || 0;
+        const [grad, badge] = styles[p.varian] || styles.Campur, q = cart[p.sku] || 0;
         return `<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col justify-between">
           <div class="${grad} p-2.5 text-white">
             <div class="flex justify-between items-center mb-1.5"><span class="text-[9px] font-mono text-white/80">${p.sku}</span><span class="${badge} text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded">${p.varian}</span></div>
@@ -386,9 +390,7 @@
       }).join('');
     }
 
-    function getCartSubtotal() {
-      return Object.keys(cart).reduce((sum, s) => sum + cart[s] * state.produk.find(x => x.sku === s).harga, 0);
-    }
+    const getCartSubtotal = () => Object.keys(cart).reduce((sum, s) => sum + cart[s] * state.produk.find(x => x.sku === s).harga, 0);
 
     function renderFloatingCart() {
       const skus = Object.keys(cart), bar = document.getElementById('floatingCartBar');
@@ -418,26 +420,15 @@
     function tutupCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
 
     function hitungKembalian() {
-      const sub = getCartSubtotal();
-      const diskon = parseInt(document.getElementById('checkoutDiskon').value) || 0;
-      const total = Math.max(0, sub - diskon);
+      const total = Math.max(0, getCartSubtotal() - (parseInt(document.getElementById('checkoutDiskon').value) || 0));
       const bayar = parseInt(document.getElementById('checkoutBayar').value) || 0;
       const metode = document.getElementById('checkoutMetode').value;
       document.getElementById('modalTotalBayar').textContent = rp(total);
       document.getElementById('modalKembalian').textContent = metode === 'TUNAI' ? rp(Math.max(0, bayar - total)) : 'Rp 0';
     }
 
-    function setUangPas() {
-      const total = Math.max(0, getCartSubtotal() - (parseInt(document.getElementById('checkoutDiskon').value) || 0));
-      document.getElementById('checkoutBayar').value = total;
-      hitungKembalian();
-    }
-
-    function tambahUang(nom) {
-      const cur = parseInt(document.getElementById('checkoutBayar').value) || 0;
-      document.getElementById('checkoutBayar').value = cur + nom;
-      hitungKembalian();
-    }
+    function setUangPas() { document.getElementById('checkoutBayar').value = Math.max(0, getCartSubtotal() - (parseInt(document.getElementById('checkoutDiskon').value) || 0)); hitungKembalian(); }
+    function tambahUang(nom) { document.getElementById('checkoutBayar').value = (parseInt(document.getElementById('checkoutBayar').value) || 0) + nom; hitungKembalian(); }
 
     async function prosesSimpanNota(action) {
       const w = state.warung.find(x => x.id === state.activeWarungId) || state.warung[0];
@@ -460,35 +451,27 @@
       const now = new Date();
       const trx = {
         noFaktur: 'INV-' + now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0') + Math.floor(10 + Math.random()*89),
-        tanggal: now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' }),
+        tanggal: now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
         waktu: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         warung: w.nama, metode, subtotal, diskon, total, bayar, kembali, bonus, items
       };
       state.transaksi.unshift(trx);
-      cart = {};
-      tutupCheckoutModal();
-      save();
+      cart = {}; tutupCheckoutModal(); save();
 
-      if (action === 'PRINT') {
-        await cetakKeRPP02N(formatStruk58mm(trx));
-      } else {
+      if (action === 'PRINT') await cetakKeRPP02N(formatStruk58mm(trx));
+      else {
         const wa = `*NOTA LINK BOLD CANVAS*\nNo: ${trx.noFaktur}\nWarung: ${trx.warung}\nWaktu: ${trx.waktu}\nBayar: ${trx.metode}\n${items.map(i => `- ${i.nama} x${i.qty} = ${rp(i.subtotal)}`).join('\n')}\nDiskon: ${rp(trx.diskon)}\nBonus: ${trx.bonus} Bks\n*TOTAL: ${rp(trx.total)}*\nSales: ${state.salesName}`;
         window.open('https://wa.me/?text=' + encodeURIComponent(wa), '_blank');
       }
     }
 
-    function reprintNota(idx) {
-      const trx = state.transaksi[idx];
-      if (trx) cetakKeRPP02N(formatStruk58mm(trx));
-    }
+    function reprintNota(idx) { const trx = state.transaksi[idx]; if (trx) cetakKeRPP02N(formatStruk58mm(trx)); }
 
-    // --- BARCODE SCANNER ---
     async function bukaScannerBarcode() {
       document.getElementById('scannerModal').classList.remove('hidden');
       try {
         scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        const vid = document.getElementById('scannerVideo');
-        vid.srcObject = scanStream;
+        const vid = document.getElementById('scannerVideo'); vid.srcObject = scanStream;
         if ('BarcodeDetector' in window) {
           const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'qr_code'] });
           const interval = setInterval(async () => {
@@ -498,29 +481,15 @@
               if (codes.length > 0) {
                 const val = codes[0].rawValue;
                 const found = state.produk.find(p => p.barcode === val || p.sku.toLowerCase() === val.toLowerCase());
-                if (found) {
-                  addCart(found.sku, 1);
-                  tutupScannerBarcode();
-                  alert('Ditambahkan: ' + found.nama);
-                }
+                if (found) { addCart(found.sku, 1); tutupScannerBarcode(); alert('Ditambahkan: ' + found.nama); }
               }
             } catch (e) {}
           }, 500);
-        } else {
-          document.getElementById('scannerHint').textContent = 'Browser tidak mendukung deteksi otomatis, ketik kode di kolom pencarian.';
         }
-      } catch (e) {
-        alert('Izin kamera ditolak atau tidak tersedia.');
-        tutupScannerBarcode();
-      }
+      } catch (e) { tutupScannerBarcode(); }
     }
+    function tutupScannerBarcode() { if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; } document.getElementById('scannerModal').classList.add('hidden'); }
 
-    function tutupScannerBarcode() {
-      if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
-      document.getElementById('scannerModal').classList.add('hidden');
-    }
-
-    // --- WARUNG, STOK, SETORAN ---
     function renderWarungList() {
       const a = state.warung.find(x => x.id === state.activeWarungId) || state.warung[0];
       document.getElementById('activeWarungName').textContent = a.nama;
@@ -536,11 +505,7 @@
     function renderStokList() {
       document.getElementById('listStokContainer').innerHTML = state.produk.map(p => `
         <div class="bg-white rounded-2xl p-3 border flex justify-between items-center gap-2">
-          <div>
-            <span class="text-[10px] font-mono text-slate-400">${p.sku} • ${rp(p.harga)}</span>
-            <p class="text-xs font-extrabold">${p.nama}</p>
-            <p class="text-[11px]">Bagus: <strong class="text-emerald-600">${p.stok}</strong> • BS: <strong class="text-red-600">${p.bs}</strong></p>
-          </div>
+          <div><span class="text-[10px] font-mono text-slate-400">${p.sku} • ${rp(p.harga)}</span><p class="text-xs font-extrabold">${p.nama}</p><p class="text-[11px]">Bagus: <strong class="text-emerald-600">${p.stok}</strong> • BS: <strong class="text-red-600">${p.bs}</strong></p></div>
           <div class="flex flex-col gap-1 shrink-0">
             <button onclick="ubahHargaProduk('${p.sku}')" class="bg-slate-100 text-slate-800 text-[10px] font-bold px-2.5 py-1 rounded-lg">Edit Harga</button>
             <button onclick="const j=parseInt(prompt('Jumlah BS:'));if(j>0){state.produk.find(x=>x.sku==='${p.sku}').bs+=j;save()}" class="bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">+ BS</button>
@@ -549,10 +514,9 @@
     }
     function ubahHargaProduk(sku) { const p = state.produk.find(x => x.sku === sku); const h = parseInt(prompt(`Harga baru ${p.nama}:`, p.harga)); if (h > 0) { p.harga = h; save(); } }
     function tambahProdukBaru() {
-      const nama = prompt('Nama Produk Baru (contoh: Link Bold 12 Slop):');
-      if (!nama) return;
+      const nama = prompt('Nama Produk Baru:'); if (!nama) return;
       const harga = parseInt(prompt('Harga Jual (Rp):', '150000')) || 150000;
-      const stok = parseInt(prompt('Stok Awal Mobil:', '10')) || 10;
+      const stok = parseInt(prompt('Stok Awal:', '10')) || 10;
       const varian = prompt('Varian (Merah / Biru / Hitam / Menthol / Campur):', 'Merah') || 'Merah';
       const satuan = prompt('Satuan (Grosir (Slop) / Eceran (Bungkus) / Bal / Karton):', 'Grosir (Slop)') || 'Grosir (Slop)';
       state.produk.push({ sku: 'LB-' + Date.now().toString().slice(-4), barcode: '', varian, satuan, subLabel: satuan, nama, harga, stok, bs: 0 });
@@ -560,36 +524,108 @@
     }
     function muatUlangStok() { state.produk.forEach(p => { const t = parseInt(prompt(`Tambah stok ${p.sku} (Sisa: ${p.stok}):`, '0')); if (t > 0) p.stok += t; }); save(); }
 
+    // --- KALKULASI ANALITIK, ARSIP HARIAN & CSV ---
+    function aturTargetKomisi() {
+      const t = parseInt(prompt('Target Omzet Harian (Rp):', state.targetHarian || 5000000));
+      if (t > 0) state.targetHarian = t;
+      const k = parseFloat(prompt('Persentase Komisi Sales (%):', state.komisiPersen || 2));
+      if (!isNaN(k) && k >= 0) state.komisiPersen = k;
+      save();
+    }
+
     function renderSetoran() {
-      document.getElementById('tglSetoran').textContent = new Date().toLocaleDateString('id-ID');
+      document.getElementById('tglSetoran').textContent = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
       const tunai = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((a, b) => a + b.total, 0);
       const tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((a, b) => a + b.total, 0);
       const bon = state.transaksi.filter(t => t.metode === 'BON').reduce((a, b) => a + b.total, 0);
+      const omzetHari = tunai + tf + bon;
+      const target = state.targetHarian || 5000000;
+      const komisiPct = state.komisiPersen ?? 2;
+      const komisiHari = Math.round(omzetHari * (komisiPct / 100));
+      const pct = Math.min(100, Math.round((omzetHari / target) * 100));
+
+      document.getElementById('analitikOmzetHari').textContent = rp(omzetHari);
+      document.getElementById('targetProgressBar').style.width = pct + '%';
+      document.getElementById('targetPersenLabel').textContent = `${pct}% dari Target ${rp(target)}`;
+      document.getElementById('komisiPersenLabel').textContent = komisiPct;
+      document.getElementById('analitikKomisiHari').textContent = rp(komisiHari);
+
       document.getElementById('ringkasanKeuangan').innerHTML = `
-        <div class="flex justify-between"><span>Setoran Cash:</span><strong class="text-emerald-600">${rp(tunai)}</strong></div>
+        <div class="flex justify-between"><span>Setoran Cash (${state.transaksi.filter(t=>t.metode==='TUNAI').length} nota):</span><strong class="text-emerald-600">${rp(tunai)}</strong></div>
         <div class="flex justify-between"><span>Transfer / QRIS:</span><strong class="text-blue-600">${rp(tf)}</strong></div>
-        <div class="flex justify-between"><span>Penjualan Bon:</span><strong class="text-amber-600">${rp(bon)}</strong></div>
-        <div class="flex justify-between border-t pt-1"><span>Total Omzet:</span><strong>${rp(tunai + tf + bon)}</strong></div>
-        <div class="flex justify-between"><span>Bonus Keluar:</span><strong>${state.bonusKeluar} Bks</strong></div>`;
+        <div class="flex justify-between"><span>Penjualan Bon Baru:</span><strong class="text-amber-600">${rp(bon)}</strong></div>
+        <div class="flex justify-between border-t pt-1"><span>Total Penjualan Hari Ini (${state.transaksi.length} nota):</span><strong>${rp(omzetHari)}</strong></div>
+        <div class="flex justify-between"><span>Bonus Promo Keluar:</span><strong>${state.bonusKeluar} Bks</strong></div>`;
+
+      // Rekap Terjual Per Produk Hari Ini
+      const soldMap = {};
+      state.transaksi.forEach(t => (t.items || []).forEach(it => {
+        if (!soldMap[it.sku]) soldMap[it.sku] = { nama: it.nama, qty: 0, total: 0 };
+        soldMap[it.sku].qty += it.qty;
+        soldMap[it.sku].total += it.subtotal;
+      }));
+      const soldKeys = Object.keys(soldMap);
+      document.getElementById('rekapProdukTerjual').innerHTML = soldKeys.length === 0
+        ? '<p class="text-slate-400">Belum ada produk terjual hari ini.</p>'
+        : soldKeys.map(k => `<div class="flex justify-between bg-slate-50 p-2 rounded-lg"><span><strong>${k}</strong> • ${soldMap[k].nama}</span><span><strong>${soldMap[k].qty}x</strong> (${rp(soldMap[k].total)})</span></div>`).join('');
+
+      // Arsip Multi-Hari & Total Akumulasi
+      const arsip = state.arsipHarian || [];
+      const totalArsip = arsip.reduce((a, b) => a + b.omzet, 0);
+      document.getElementById('totalAkumulasiSemuaHari').textContent = rp(totalArsip + omzetHari);
+      document.getElementById('arsipHarianList').innerHTML = arsip.length === 0
+        ? '<p class="text-slate-400">Belum ada arsip hari sebelumnya. Ketuk "Tutup Buku & Arsipkan" di akhir rute.</p>'
+        : arsip.map(a => `<div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100"><div><p class="font-bold text-slate-800">${a.tanggal}</p><p class="text-[10px] text-slate-500">${a.jumlahNota} Nota • Komisi: ${rp(a.komisi)}</p></div><span class="font-black text-emerald-700">${rp(a.omzet)}</span></div>`).join('');
+
       document.getElementById('riwayatNotaList').innerHTML = state.transaksi.map((t, i) => `
         <div class="bg-slate-50 p-2.5 rounded-xl flex justify-between items-center border border-slate-100">
           <div><p class="font-bold">${t.warung} <span class="text-[10px] font-mono text-slate-400">(${t.noFaktur})</span></p><p class="text-[10px] text-slate-500">${t.waktu} • ${t.metode} • ${rp(t.total)}</p></div>
           <button onclick="reprintNota(${i})" class="bg-[#0F172A] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg">🖨️ Print</button>
-        </div>`).join('') || '<p class="text-slate-400">Belum ada transaksi.</p>';
+        </div>`).join('') || '<p class="text-slate-400">Belum ada transaksi hari ini.</p>';
+    }
+
+    function tutupBukuDanArsipkan() {
+      if (state.transaksi.length === 0) return alert('Belum ada transaksi hari ini untuk diarsipkan.');
+      if (!confirm('Arsipkan total penjualan hari ini ke Riwayat Harian dan mulai buku hari baru?')) return;
+      const omzet = state.transaksi.reduce((a, b) => a + b.total, 0);
+      const komisi = Math.round(omzet * ((state.komisiPersen ?? 2) / 100));
+      if (!state.arsipHarian) state.arsipHarian = [];
+      state.arsipHarian.unshift({
+        tanggal: new Date().toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
+        jumlahNota: state.transaksi.length, omzet, komisi
+      });
+      state.transaksi = [];
+      state.bonusKeluar = 0;
+      save();
+      alert('Penjualan hari ini berhasil diarsipkan!');
+    }
+
+    function exportCSV() {
+      if (state.transaksi.length === 0) return alert('Belum ada data transaksi hari ini untuk di-export.');
+      let csv = 'No Faktur,Tanggal,Waktu,Warung,Metode,Subtotal,Diskon,Total,Bonus Bks\n';
+      state.transaksi.forEach(t => {
+        csv += `"${t.noFaktur}","${t.tanggal}","${t.waktu}","${t.warung}","${t.metode}",${t.subtotal},${t.diskon},${t.total},${t.bonus}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Laporan_LinkBold_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     function printLaporanRPP02N() {
       const tunai = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((a, b) => a + b.total, 0);
       const tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((a, b) => a + b.total, 0);
       const bon = state.transaksi.filter(t => t.metode === 'BON').reduce((a, b) => a + b.total, 0);
+      const omzet = tunai + tf + bon;
+      const komisi = Math.round(omzet * ((state.komisiPersen ?? 2) / 100));
       const line = '--------------------------------\n';
       let out = '    LAPORAN SETORAN KANVAS\n       LINK BOLD CANVAS\n' + line;
       out += `Tgl  : ${new Date().toLocaleDateString('id-ID')}\nSales: ${state.salesName}\n` + line;
-      out += padLR('Cash Setor', rp(tunai)) + '\n';
-      out += padLR('Transfer', rp(tf)) + '\n';
-      out += padLR('Bon Baru', rp(bon)) + '\n';
-      out += padLR('TOTAL OMZET', rp(tunai + tf + bon)) + '\n';
-      out += padLR('Bonus Keluar', `${state.bonusKeluar} Bks`) + '\n' + line;
+      out += padLR('Cash Setor', rp(tunai)) + '\n' + padLR('Transfer', rp(tf)) + '\n' + padLR('Bon Baru', rp(bon)) + '\n';
+      out += padLR('TOTAL OMZET', rp(omzet)) + '\n' + padLR('Est. Komisi', rp(komisi)) + '\n' + padLR('Bonus Keluar', `${state.bonusKeluar} Bks`) + '\n' + line;
       out += 'SISA STOK MOBIL:\n';
       state.produk.forEach(p => { out += padLR(p.sku, `${p.stok} (BS:${p.bs})`) + '\n'; });
       out += line + '\n\n\n';
@@ -600,11 +636,11 @@
       const tunai = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((a, b) => a + b.total, 0);
       const tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((a, b) => a + b.total, 0);
       const bon = state.transaksi.filter(t => t.metode === 'BON').reduce((a, b) => a + b.total, 0);
-      const msg = `*SETORAN LINK BOLD CANVAS*\nSales: ${state.salesName}\nCash: ${rp(tunai)}\nTransfer: ${rp(tf)}\nBon: ${rp(bon)}\nTotal Omzet: ${rp(tunai + tf + bon)}\nBonus: ${state.bonusKeluar} Bks`;
+      const omzet = tunai + tf + bon;
+      const msg = `*SETORAN LINK BOLD CANVAS*\nSales: ${state.salesName}\nCash: ${rp(tunai)}\nTransfer: ${rp(tf)}\nBon: ${rp(bon)}\n*Total Omzet: ${rp(omzet)}*\nBonus: ${state.bonusKeluar} Bks`;
       window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
     }
 
-    function tutupBukuHariIni() { if (confirm('Reset transaksi harian untuk hari baru?')) { state.transaksi = []; state.bonusKeluar = 0; save(); } }
     function bukaModalSales() { const n = prompt('Nama Sales:', state.salesName); if (n) state.salesName = n; const r = prompt('Rute:', state.rute); if (r) state.rute = r; save(); }
     function renderAll() { document.getElementById('salesSubHeader').textContent = `${state.salesName} • ${state.rute}`; renderFilters(); renderKatalog(); renderFloatingCart(); renderWarungList(); renderStokList(); renderSetoran(); }
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
