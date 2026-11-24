@@ -1,4 +1,4 @@
-const CACHE_NAME = 'linkbold-pos-v31';
+const CACHE_NAME = 'linkbold-pos-v32';
 const ASSETS = ['./', './index.html', './kw.js', './pin.js', './kredit.js', './manifest.json'];
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS))); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
