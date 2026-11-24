@@ -1,510 +1,347 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MONOLITH — Studio Digital</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#0a0a08;
-    --ink-2:#131209;
-    --bone:#ece7db;
-    --bone-dim:#a6a291;
-    --moss:#5c6b42;
-    --rust:#b8632f;
-    --lichen:#9088ab;
-    --stone:#302d24;
-    --line: rgba(236,231,219,0.14);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--ink);
-    color:var(--bone);
-    font-family:'Inter',sans-serif;
-    overflow-x:hidden;
-  }
-  ::selection{background:var(--rust);color:var(--ink);}
-  .mono{font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;}
-  .display{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.01em;}
-
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}
-  }
-
-  a{color:inherit;}
-  :focus-visible{outline:2px solid var(--rust);outline-offset:3px;}
-
-  /* NAV */
-  nav{
-    position:fixed;top:0;left:0;right:0;z-index:100;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:22px 32px;
-    font-size:12px;
-    mix-blend-mode:difference;
-  }
-  nav .side{display:flex;gap:28px;align-items:center;}
-  nav a{text-decoration:none;color:var(--bone);opacity:0.85;transition:opacity .2s;}
-  nav a:hover{opacity:1;}
-  nav .mark{font-family:'Anton',sans-serif;font-size:20px;text-transform:uppercase;}
-  .nav-links{display:flex;gap:22px;}
-  @media(max-width:720px){.nav-links{display:none;}}
-
-  /* HERO */
-  .hero{
-    position:relative;
-    min-height:100svh;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    padding:0 4vw;
-    overflow:hidden;
-  }
-  .hero-grid{
-    position:relative;
-    display:grid;
-    grid-template-columns:1fr auto 1fr;
-    align-items:center;
-    width:100%;
-  }
-  .hero .word{
-    font-family:'Anton',sans-serif;
-    font-size:clamp(56px,12vw,168px);
-    line-height:0.86;
-    letter-spacing:-0.01em;
-  }
-  .hero .word.left{text-align:left;}
-  .hero .word.right{text-align:right;}
-
-  .organism{
-    position:relative;
-    width:min(38vw,420px);
-    aspect-ratio:1/1.15;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .organism .blob{
-    position:absolute;
-    inset:0;
-    border-radius:42% 58% 65% 35% / 45% 40% 60% 55%;
-    background:
-      radial-gradient(circle at 30% 25%, #6c7a4c 0%, transparent 40%),
-      radial-gradient(circle at 70% 20%, #8a7550 0%, transparent 45%),
-      radial-gradient(circle at 60% 70%, #4a5334 0%, transparent 50%),
-      radial-gradient(circle at 20% 75%, #b8632f33 0%, transparent 45%),
-      linear-gradient(160deg, #3e3a2b, #23221a 70%);
-    box-shadow: inset 0 0 60px rgba(0,0,0,0.5), 0 30px 80px -20px rgba(0,0,0,0.7);
-    animation: drift 14s ease-in-out infinite;
-  }
-  @keyframes drift{
-    0%,100%{border-radius:42% 58% 65% 35% / 45% 40% 60% 55%;}
-    50%{border-radius:58% 42% 40% 60% / 55% 60% 40% 45%;}
-  }
-  .organism .fleck{position:absolute;border-radius:50%;}
-  .organism .f1{width:14%;height:14%;background:var(--lichen);top:18%;left:12%;opacity:0.85;filter:blur(0.4px);}
-  .organism .f2{width:9%;height:9%;background:var(--rust);bottom:22%;right:16%;opacity:0.9;}
-  .organism .f3{width:6%;height:6%;background:var(--bone);top:60%;left:30%;opacity:0.5;}
-  .organism .stem{
-    position:absolute;bottom:10%;right:30%;
-    width:3px;height:30%;background:var(--bone-dim);opacity:0.5;
-    transform:rotate(8deg);
-  }
-  .organism .mark{
-    position:absolute;
-    inset:0;
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Anton',sans-serif;
-    font-size:15vw;
-    max-font-size:60px;
-    color:var(--bone);
-    opacity:0.08;
-    pointer-events:none;
-  }
-
-  .hero-mark{
-    position:absolute;
-    top:24px;left:50%;transform:translateX(-50%);
-    font-family:'Anton',sans-serif;
-    font-size:22px;
-    opacity:0.9;
-    z-index:5;
-  }
-
-  .hero-sub{
-    display:flex;justify-content:space-between;align-items:flex-end;
-    margin-top:48px;
-    padding-top:24px;
-    border-top:1px solid var(--line);
-    font-size:13px;
-    color:var(--bone-dim);
-    gap:24px;
-  }
-  .hero-sub .tag{max-width:340px;}
-  .scroll-cue{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px;}
-  .scroll-cue .line{width:1px;height:34px;background:var(--bone-dim);animation:pulse 2s infinite;}
-  @keyframes pulse{0%,100%{opacity:0.2;}50%{opacity:0.9;}}
-
-  /* MARQUEE */
-  .marquee{
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-    padding:18px 0;
-    overflow:hidden;
-    white-space:nowrap;
-  }
-  .marquee-track{
-    display:inline-flex;
-    animation:scroll 26s linear infinite;
-  }
-  .marquee-track span{
-    font-family:'Anton',sans-serif;
-    font-size:clamp(22px,3.4vw,40px);
-    text-transform:uppercase;
-    padding:0 28px;
-    color:var(--bone-dim);
-    display:inline-flex;
-    align-items:center;
-    gap:28px;
-  }
-  .marquee-track span::after{content:'✦';font-size:14px;color:var(--rust);}
-  @keyframes scroll{
-    from{transform:translateX(0);}
-    to{transform:translateX(-50%);}
-  }
-
-  section{padding:120px 6vw;}
-  .eyebrow{
-    font-size:12px;
-    color:var(--rust);
-    display:flex;align-items:center;gap:10px;
-    margin-bottom:22px;
-  }
-  .eyebrow::before{content:'';width:24px;height:1px;background:var(--rust);}
-
-  /* ARCHIVE */
-  .archive-head{
-    display:flex;justify-content:space-between;align-items:flex-end;
-    gap:24px;flex-wrap:wrap;
-    margin-bottom:64px;
-  }
-  .archive-head h2{
-    font-family:'Anton',sans-serif;
-    font-size:clamp(32px,5.6vw,64px);
-    line-height:0.95;
-    max-width:820px;
-    text-transform:uppercase;
-  }
-  .archive-count{font-size:13px;color:var(--bone-dim);text-align:right;}
-
-  .work-list{border-top:1px solid var(--line);}
-  .work-item{
-    border-bottom:1px solid var(--line);
-    padding:30px 0;
-    display:grid;
-    grid-template-columns:60px 1fr auto auto;
-    align-items:center;
-    gap:24px;
-    cursor:pointer;
-    position:relative;
-    transition:padding-left .35s ease;
-  }
-  .work-item:hover{padding-left:16px;}
-  .work-item .idx{font-size:13px;color:var(--bone-dim);}
-  .work-item h3{
-    font-family:'Anton',sans-serif;
-    font-size:clamp(22px,3.6vw,42px);
-    text-transform:uppercase;
-    transition:color .3s;
-  }
-  .work-item:hover h3{color:var(--rust);}
-  .work-item .cat{font-size:12px;color:var(--bone-dim);}
-  .work-item .yr{font-size:12px;color:var(--bone-dim);}
-  .work-preview{
-    position:absolute;
-    right:6vw;top:50%;
-    width:180px;height:120px;
-    transform:translateY(-50%) scale(0.9);
-    border-radius:4px;
-    overflow:hidden;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .3s, transform .3s;
-    box-shadow:0 20px 50px -10px rgba(0,0,0,0.6);
-  }
-  .work-item:hover .work-preview{opacity:1;transform:translateY(-50%) scale(1);}
-  @media(max-width:720px){
-    .work-item{grid-template-columns:32px 1fr;row-gap:6px;}
-    .work-item .cat, .work-item .yr{grid-column:2;}
-    .work-preview{display:none;}
-  }
-
-  /* MOCKUP SHOWCASE */
-  .showcase{
-    background:var(--ink-2);
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-  }
-  .showcase-inner{
-    display:grid;grid-template-columns:1fr 1fr;
-    gap:60px;
-    align-items:center;
-  }
-  @media(max-width:860px){.showcase-inner{grid-template-columns:1fr;}}
-  .laptop{
-    perspective:1200px;
-  }
-  .laptop-body{
-    background:linear-gradient(160deg,#1c1a14,#0e0d09);
-    border-radius:14px 14px 3px 3px;
-    padding:14px 14px 26px;
-    box-shadow:0 40px 90px -30px rgba(0,0,0,0.8);
-    transform:rotateX(4deg);
-  }
-  .laptop-screen{
-    aspect-ratio:16/10;
-    border-radius:4px;
-    background:
-      radial-gradient(circle at 25% 20%, #6c7a4c 0%, transparent 45%),
-      radial-gradient(circle at 75% 30%, #8a7550 0%, transparent 45%),
-      radial-gradient(circle at 50% 80%, #4a5334 0%, transparent 55%),
-      linear-gradient(160deg,#2a271c,#141310);
-    display:flex;align-items:center;justify-content:center;
-    position:relative;
-    overflow:hidden;
-  }
-  .laptop-screen .tag{
-    font-family:'Anton',sans-serif;
-    font-size:13vw;
-    color:rgba(236,231,219,0.9);
-    letter-spacing:-0.02em;
-  }
-  .laptop-base{
-    height:10px;background:linear-gradient(#141310,#0a0906);
-    border-radius:0 0 8px 8px;
-    margin-top:4px;
-  }
-  .showcase-text .eyebrow{margin-bottom:18px;}
-  .showcase-text h2{
-    font-family:'Anton',sans-serif;
-    font-size:clamp(28px,4.4vw,48px);
-    text-transform:uppercase;
-    line-height:1;
-    margin-bottom:22px;
-  }
-  .showcase-text p{color:var(--bone-dim);max-width:440px;margin-bottom:28px;font-size:15px;line-height:1.7;}
-  .btn{
-    display:inline-flex;align-items:center;gap:10px;
-    font-size:13px;
-    padding:14px 22px;
-    border:1px solid var(--line);
-    border-radius:999px;
-    text-decoration:none;
-    transition:background .25s, color .25s, border-color .25s;
-  }
-  .btn:hover{background:var(--bone);color:var(--ink);border-color:var(--bone);}
-
-  /* MANIFESTO */
-  .manifesto{
-    display:grid;grid-template-columns:200px 1fr;
-    gap:40px;
-  }
-  @media(max-width:720px){.manifesto{grid-template-columns:1fr;}}
-  .manifesto p{
-    font-family:'Anton',sans-serif;
-    font-size:clamp(24px,4vw,42px);
-    line-height:1.15;
-    text-transform:uppercase;
-    max-width:920px;
-  }
-  .manifesto p span{color:var(--bone-dim);}
-
-  /* FOOTER */
-  footer{
-    padding:100px 6vw 40px;
-    border-top:1px solid var(--line);
-  }
-  .footer-top{
-    display:flex;justify-content:space-between;align-items:flex-end;
-    flex-wrap:wrap;gap:40px;
-    margin-bottom:80px;
-  }
-  .footer-top h2{
-    font-family:'Anton',sans-serif;
-    font-size:clamp(38px,8vw,110px);
-    text-transform:uppercase;
-    line-height:0.9;
-  }
-  .footer-links{
-    display:grid;grid-template-columns:repeat(3,auto);gap:60px;
-    margin-bottom:60px;
-  }
-  @media(max-width:600px){.footer-links{grid-template-columns:1fr;gap:28px;}}
-  .footer-links h4{font-size:12px;color:var(--bone-dim);margin-bottom:14px;font-weight:500;}
-  .footer-links a{display:block;text-decoration:none;font-size:14px;margin-bottom:10px;opacity:0.9;}
-  .footer-links a:hover{color:var(--rust);}
-  .footer-bottom{
-    display:flex;justify-content:space-between;
-    font-size:12px;color:var(--bone-dim);
-    flex-wrap:wrap;gap:12px;
-  }
-
-  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease, transform .7s ease;}
-  .reveal.in{opacity:1;transform:translateY(0);}
-</style>
-<link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LINK BOLD CANVAS - POS Kanvas</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#dc2626">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    .tab-active { background-color: #dc2626; color: #ffffff; font-weight: 700; }
+  </style>
 </head>
-<body>
-
-<nav>
-  <a href="#top" class="mark">M.</a>
-  <div class="nav-links mono">
-    <a href="#work">Archive</a>
-    <a href="#studio">Studio</a>
-    <a href="#contact">Contact</a>
-  </div>
-  <div class="side mono">
-    <span>Manila, PH</span>
-  </div>
-</nav>
-
-<section class="hero" id="top">
-  <div class="hero-mark">N</div>
-  <div class="hero-grid">
-    <div class="word left display">Studio</div>
-    <div class="organism">
-      <div class="blob"></div>
-      <div class="fleck f1"></div>
-      <div class="fleck f2"></div>
-      <div class="fleck f3"></div>
-      <div class="stem"></div>
+<body class="pb-24">
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-20 flex justify-between items-center">
+    <div>
+      <h1 class="text-lg font-extrabold tracking-tight text-white">LINK BOLD <span class="text-red-500">CANVAS</span></h1>
+      <p class="text-xs text-slate-400">Sales: <strong class="text-slate-200">Denis</strong> • Rute Selatan</p>
     </div>
-    <div class="word right display">Digital</div>
-  </div>
-  <div class="hero-sub">
-    <p class="tag">A studio that grows brands the way a garden grows — slowly, deliberately, from the ground up.</p>
-    <div class="scroll-cue mono"><span>Scroll</span><div class="line"></div></div>
-    <p class="mono" style="text-align:right">Est. 2019<br>Vol. 07</p>
-  </div>
-</section>
+    <div class="text-right">
+      <span id="tglHariIni" class="text-[11px] bg-slate-800 text-slate-300 px-2 py-1 rounded-md"></span>
+    </div>
+  </header>
 
-<div class="marquee">
-  <div class="marquee-track display">
-    <span>Branding</span><span>Motion</span><span>Web Design</span><span>Strategy</span><span>Art Direction</span>
-    <span>Branding</span><span>Motion</span><span>Web Design</span><span>Strategy</span><span>Art Direction</span>
-  </div>
-</div>
+  <section class="grid grid-cols-2 gap-2 p-3">
+    <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3">
+      <p class="text-[11px] text-slate-400">Total Penjualan Hari Ini</p>
+      <p id="statOmzet" class="text-base font-bold text-emerald-400 mt-0.5">Rp 0</p>
+    </div>
+    <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3">
+      <p class="text-[11px] text-slate-400">Total Piutang Warung</p>
+      <p id="statPiutang" class="text-base font-bold text-amber-400 mt-0.5">Rp 0</p>
+    </div>
+  </section>
 
-<section id="work">
-  <div class="archive-head reveal">
-    <div class="eyebrow mono">Archive — Selected Works</div>
-  </div>
-  <div class="archive-head reveal" style="margin-top:-40px;">
-    <h2>Every project<br>left something growing.</h2>
-    <div class="archive-count mono">12 Projects<br>2019 — 2026</div>
-  </div>
-
-  <div class="work-list reveal">
-    <div class="work-item">
-      <span class="idx mono">01</span>
-      <h3>Verdant &amp; Co.</h3>
-      <span class="cat mono">Brand / Web</span>
-      <span class="yr mono">2026</span>
-      <div class="work-preview"><div class="laptop-screen" style="aspect-ratio:auto;height:100%;"></div></div>
-    </div>
-    <div class="work-item">
-      <span class="idx mono">02</span>
-      <h3>Quarry House</h3>
-      <span class="cat mono">Identity</span>
-      <span class="yr mono">2025</span>
-      <div class="work-preview"><div class="laptop-screen" style="aspect-ratio:auto;height:100%;background:radial-gradient(circle at 60% 40%,#8a7550,transparent 50%),linear-gradient(160deg,#241f16,#0e0d09);"></div></div>
-    </div>
-    <div class="work-item">
-      <span class="idx mono">03</span>
-      <h3>Lichen Labs</h3>
-      <span class="cat mono">Product / Motion</span>
-      <span class="yr mono">2025</span>
-      <div class="work-preview"><div class="laptop-screen" style="aspect-ratio:auto;height:100%;background:radial-gradient(circle at 40% 60%,#5c6b42,transparent 55%),linear-gradient(160deg,#1e2116,#0c0d08);"></div></div>
-    </div>
-    <div class="work-item">
-      <span class="idx mono">04</span>
-      <h3>Mineral Press</h3>
-      <span class="cat mono">Editorial</span>
-      <span class="yr mono">2024</span>
-      <div class="work-preview"><div class="laptop-screen" style="aspect-ratio:auto;height:100%;background:radial-gradient(circle at 55% 25%,#b8632f,transparent 50%),linear-gradient(160deg,#221a14,#0d0a08);"></div></div>
-    </div>
-    <div class="work-item">
-      <span class="idx mono">05</span>
-      <h3>Hollow &amp; Root</h3>
-      <span class="cat mono">Brand / Packaging</span>
-      <span class="yr mono">2024</span>
-      <div class="work-preview"><div class="laptop-screen" style="aspect-ratio:auto;height:100%;background:radial-gradient(circle at 30% 70%,#9088ab,transparent 50%),linear-gradient(160deg,#1b1922,#0a090c);"></div></div>
-    </div>
-  </div>
-</section>
-
-<section class="showcase">
-  <div class="showcase-inner">
-    <div class="laptop reveal">
-      <div class="laptop-body">
-        <div class="laptop-screen"><div class="tag display">N</div></div>
+  <main class="px-3">
+    <div id="view-kasir" class="space-y-3">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3 space-y-2.5">
+        <label class="block text-xs font-semibold text-slate-300">Pilih Warung Tujuan</label>
+        <div class="flex gap-2">
+          <select id="selectWarung" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"></select>
+          <button onclick="tambahWarungBaru()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs font-semibold shrink-0">+ Warung</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Metode Bayar</label>
+            <select id="metodeBayar" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white">
+              <option value="TUNAI">Tunai / Cash</option>
+              <option value="TRANSFER">Transfer</option>
+              <option value="BON">Bon / Piutang</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Bonus Promo (Bks)</label>
+            <input id="inputBonus" type="number" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white">
+          </div>
+        </div>
       </div>
-      <div class="laptop-base"></div>
-    </div>
-    <div class="showcase-text reveal">
-      <div class="eyebrow mono">Featured — Verdant &amp; Co.</div>
-      <h2>Design that behaves<br>like a living thing.</h2>
-      <p>We rebuilt Verdant's presence around texture instead of templates — layered surfaces, organic motion, and a typographic system that felt hand-placed rather than assembled.</p>
-      <a href="#contact" class="btn mono">View case study →</a>
-    </div>
-  </div>
-</section>
 
-<section id="studio">
-  <div class="eyebrow mono reveal">Studio</div>
-  <div class="manifesto reveal">
-    <div></div>
-    <p>We don't decorate brands. <span>We cultivate them —</span> pairing brutal typography with textures pulled from the ground, so every site feels found rather than built.</p>
-  </div>
-</section>
+      <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Katalog Varian Link Bold (Slop / Bks)</h2>
+        <div id="listProdukKasir" class="space-y-2"></div>
+      </div>
 
-<footer id="contact">
-  <div class="footer-top reveal">
-    <h2>Let's grow<br>something.</h2>
-    <a href="mailto:hello@monolith.studio" class="btn mono">hello@monolith.studio</a>
-  </div>
-  <div class="footer-links mono reveal">
-    <div>
-      <h4>Studio</h4>
-      <a href="#top">Home</a>
-      <a href="#work">Archive</a>
-      <a href="#studio">About</a>
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-3 space-y-2">
+        <div class="flex justify-between text-sm">
+          <span class="text-slate-400">Total Nota:</span>
+          <span id="totalKeranjang" class="font-extrabold text-white">Rp 0</span>
+        </div>
+        <button onclick="simpanTransaksi()" class="w-full bg-red-600 hover:bg-red-500 active:scale-[0.99] text-white font-bold py-2.5 rounded-lg text-sm shadow-lg shadow-red-900/30">
+          Simpan Transaksi & Cetak Nota WA
+        </button>
+      </div>
     </div>
-    <div>
-      <h4>Social</h4>
-      <a href="#">Instagram</a>
-      <a href="#">Behance</a>
-      <a href="#">LinkedIn</a>
-    </div>
-    <div>
-      <h4>Contact</h4>
-      <a href="mailto:hello@monolith.studio">Email</a>
-      <a href="#">+63 2 8000 1234</a>
-    </div>
-  </div>
-  <div class="footer-bottom mono">
-    <span>© 2026 Monolith Studio Digital</span>
-    <span>Manila — Remote Worldwide</span>
-  </div>
-</footer>
 
-<script>
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); } });
-  },{threshold:0.15});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-</script>
-<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js");}</script>
+    <div id="view-stok" class="hidden space-y-3">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Stok Muatan Mobil Kanvas</h2>
+          <button onclick="isiUlangStok()" class="text-xs bg-emerald-600 px-2.5 py-1 rounded-md font-semibold">+ Muat Stok</button>
+        </div>
+        <div id="listStokMobil" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <div id="view-warung" class="hidden space-y-3">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Daftar Warung & Catatan Bon</h2>
+          <button onclick="tambahWarungBaru()" class="text-xs bg-red-600 px-2.5 py-1 rounded-md font-semibold">+ Tambah</button>
+        </div>
+        <div id="listWarung" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <div id="view-rekap" class="hidden space-y-3">
+      <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3 space-y-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Rekap Setoran Harian</h2>
+        <div id="ringkasanSetoran" class="text-xs space-y-1.5 bg-slate-900 p-3 rounded-lg border border-slate-800"></div>
+        <button onclick="kirimRekapWA()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm">
+          Kirim Rekap Setoran ke WhatsApp
+        </button>
+        <button onclick="resetHariBaru()" class="w-full bg-slate-800 border border-slate-700 text-slate-300 font-semibold py-2 rounded-lg text-xs">
+          Tutup Buku / Mulai Hari Baru
+        </button>
+      </div>
+      <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3">
+        <h3 class="text-xs font-bold text-slate-400 mb-2">Riwayat Nota Hari Ini</h3>
+        <div id="listRiwayat" class="space-y-2 text-xs"></div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="fixed bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 grid grid-cols-4 p-1.5 gap-1 z-30">
+    <button onclick="switchTab('kasir')" id="tab-kasir" class="tab-active py-2 rounded-lg text-xs">Kasir</button>
+    <button onclick="switchTab('stok')" id="tab-stok" class="text-slate-400 py-2 rounded-lg text-xs">Stok Mobil</button>
+    <button onclick="switchTab('warung')" id="tab-warung" class="text-slate-400 py-2 rounded-lg text-xs">Warung</button>
+    <button onclick="switchTab('rekap')" id="tab-rekap" class="text-slate-400 py-2 rounded-lg text-xs">Setoran</button>
+  </nav>
+
+  <script>
+    const defaultData = {
+      produk: [
+        { id: 'lb12', nama: 'Link Bold 12 (Slop)', harga: 145000, stok: 25, bs: 0 },
+        { id: 'lb16', nama: 'Link Bold 16 (Slop)', harga: 185000, stok: 30, bs: 0 },
+        { id: 'lb20', nama: 'Link Bold 20 (Slop)', harga: 225000, stok: 20, bs: 0 },
+        { id: 'lbm16', nama: 'Link Bold Mild 16 (Slop)', harga: 180000, stok: 15, bs: 0 }
+      ],
+      warung: [
+        { id: 'w1', nama: 'Warung Bu Haji Siti - Cipanas', piutang: 0 },
+        { id: 'w2', nama: 'Toko Berkah Jaya - Pacet', piutang: 185000 },
+        { id: 'w3', nama: 'Warung Kang Asep - Mariwati', piutang: 0 }
+      ],
+      transaksi: [],
+      bonusKeluar: 0
+    };
+
+    let state = JSON.parse(localStorage.getItem('linkbold_pos_data')) || defaultData;
+    let keranjang = {};
+
+    function saveState() {
+      localStorage.setItem('linkbold_pos_data', JSON.stringify(state));
+      renderAll();
+    }
+
+    function rupiah(n) {
+      return 'Rp ' + (n || 0).toLocaleString('id-ID');
+    }
+
+    function switchTab(tab) {
+      ['kasir', 'stok', 'warung', 'rekap'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('tab-' + t);
+        btn.className = t === tab ? 'tab-active py-2 rounded-lg text-xs' : 'text-slate-400 py-2 rounded-lg text-xs';
+      });
+    }
+
+    function ubahQty(id, delta) {
+      const prod = state.produk.find(p => p.id === id);
+      const next = (keranjang[id] || 0) + delta;
+      if (next < 0) return;
+      if (next > prod.stok) { alert('Stok mobil tidak mencukupi!'); return; }
+      keranjang[id] = next;
+      renderKasir();
+    }
+
+    function renderKasir() {
+      const sel = document.getElementById('selectWarung');
+      const prevVal = sel.value;
+      sel.innerHTML = state.warung.map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
+      if (prevVal) sel.value = prevVal;
+
+      let total = 0;
+      document.getElementById('listProdukKasir').innerHTML = state.produk.map(p => {
+        const qty = keranjang[p.id] || 0;
+        total += qty * p.harga;
+        return `
+          <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 p-2.5 rounded-lg">
+            <div>
+              <p class="text-xs font-bold text-white">${p.nama}</p>
+              <p class="text-[11px] text-slate-400">${rupiah(p.harga)} • Sisa: <span class="text-emerald-400 font-semibold">${p.stok}</span></p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="ubahQty('${p.id}', -1)" class="w-7 h-7 rounded-md bg-slate-800 text-white font-bold">-</button>
+              <span class="w-6 text-center text-xs font-bold">${qty}</span>
+              <button onclick="ubahQty('${p.id}', 1)" class="w-7 h-7 rounded-md bg-red-600 text-white font-bold">+</button>
+            </div>
+          </div>`;
+      }).join('');
+      document.getElementById('totalKeranjang').textContent = rupiah(total);
+    }
+
+    function simpanTransaksi() {
+      const items = state.produk.filter(p => (keranjang[p.id] || 0) > 0).map(p => ({
+        id: p.id, nama: p.nama, qty: keranjang[p.id], harga: p.harga, subtotal: keranjang[p.id] * p.harga
+      }));
+      if (items.length === 0) { alert('Pilih minimal 1 produk!'); return; }
+
+      const warungId = document.getElementById('selectWarung').value;
+      const warung = state.warung.find(w => w.id === warungId);
+      const metode = document.getElementById('metodeBayar').value;
+      const bonus = parseInt(document.getElementById('inputBonus').value) || 0;
+      const total = items.reduce((s, i) => s + i.subtotal, 0);
+
+      items.forEach(it => {
+        const p = state.produk.find(x => x.id === it.id);
+        p.stok -= it.qty;
+      });
+      if (metode === 'BON') warung.piutang += total;
+      state.bonusKeluar += bonus;
+
+      const trx = {
+        waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        warung: warung.nama, metode, bonus, total, items
+      };
+      state.transaksi.unshift(trx);
+      keranjang = {};
+      document.getElementById('inputBonus').value = 0;
+      saveState();
+
+      const detailText = items.map(i => `- ${i.nama} x${i.qty} = ${rupiah(i.subtotal)}`).join('\n');
+      const pesanWA = `*NOTA LINK BOLD CANVAS*\nWarung: ${trx.warung}\nWaktu: ${trx.waktu}\nMetode: ${trx.metode}\n${detailText}\nBonus: ${trx.bonus} Bks\n*Total: ${rupiah(trx.total)}*\nSales: Denis (Rute Selatan)`;
+      if (confirm('Transaksi tersimpan! Kirim nota ke WhatsApp sekarang?')) {
+        window.open('https://wa.me/?text=' + encodeURIComponent(pesanWA), '_blank');
+      }
+    }
+
+    function renderStok() {
+      document.getElementById('listStokMobil').innerHTML = state.produk.map(p => `
+        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg flex justify-between items-center">
+          <div>
+            <p class="text-xs font-bold text-white">${p.nama}</p>
+            <p class="text-[11px] text-slate-400">Bagus: <span class="text-emerald-400 font-bold">${p.stok}</span> | Retur/BS: <span class="text-red-400 font-bold">${p.bs}</span></p>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="tambahBS('${p.id}')" class="text-[11px] bg-amber-600/20 text-amber-300 border border-amber-600/40 px-2 py-1 rounded">+ BS</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function tambahBS(id) {
+      const jml = parseInt(prompt('Jumlah retur / BS masuk ke mobil:'));
+      if (jml > 0) {
+        const p = state.produk.find(x => x.id === id);
+        p.bs += jml;
+        saveState();
+      }
+    }
+
+    function isiUlangStok() {
+      state.produk.forEach(p => {
+        const tambah = parseInt(prompt(`Tambah stok bagus untuk ${p.nama} (Saat ini: ${p.stok}):`, '0'));
+        if (tambah > 0) p.stok += tambah;
+      });
+      saveState();
+    }
+
+    function renderWarung() {
+      document.getElementById('listWarung').innerHTML = state.warung.map(w => `
+        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg flex justify-between items-center">
+          <div>
+            <p class="text-xs font-bold text-white">${w.nama}</p>
+            <p class="text-[11px] ${w.piutang > 0 ? 'text-amber-400 font-semibold' : 'text-slate-400'}">Piutang: ${rupiah(w.piutang)}</p>
+          </div>
+          ${w.piutang > 0 ? `<button onclick="bayarBon('${w.id}')" class="text-[11px] bg-emerald-600 text-white px-2.5 py-1 rounded font-semibold">Lunasi</button>` : '<span class="text-[10px] text-emerald-500">Lunas</span>'}
+        </div>
+      `).join('');
+    }
+
+    function bayarBon(id) {
+      const w = state.warung.find(x => x.id === id);
+      const bayar = parseInt(prompt(`Nominal pembayaran bon ${w.nama} (Total: ${w.piutang}):`, w.piutang));
+      if (bayar > 0) {
+        w.piutang = Math.max(0, w.piutang - bayar);
+        saveState();
+      }
+    }
+
+    function tambahWarungBaru() {
+      const nama = prompt('Masukkan Nama Warung & Alamat:');
+      if (nama && nama.trim()) {
+        state.warung.push({ id: 'w' + Date.now(), nama: nama.trim(), piutang: 0 });
+        saveState();
+      }
+    }
+
+    function renderRekap() {
+      const tunai = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((s, t) => s + t.total, 0);
+      const tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((s, t) => s + t.total, 0);
+      const bon = state.transaksi.filter(t => t.metode === 'BON').reduce((s, t) => s + t.total, 0);
+      const omzet = tunai + tf + bon;
+      const totalPiutang = state.warung.reduce((s, w) => s + w.piutang, 0);
+
+      document.getElementById('statOmzet').textContent = rupiah(omzet);
+      document.getElementById('statPiutang').textContent = rupiah(totalPiutang);
+
+      document.getElementById('ringkasanSetoran').innerHTML = `
+        <div class="flex justify-between"><span class="text-slate-400">Setoran Tunai (Cash):</span><span class="font-bold text-emerald-400">${rupiah(tunai)}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Transfer Masuk:</span><span class="font-bold text-sky-400">${rupiah(tf)}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Penjualan Bon Baru:</span><span class="font-bold text-amber-400">${rupiah(bon)}</span></div>
+        <div class="flex justify-between border-t border-slate-800 pt-1.5"><span class="text-slate-300 font-semibold">Total Omzet Hari Ini:</span><span class="font-extrabold text-white">${rupiah(omzet)}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Total Bonus Promo Keluar:</span><span class="text-slate-200">${state.bonusKeluar} Bks</span></div>
+      `;
+
+      document.getElementById('listRiwayat').innerHTML = state.transaksi.length === 0
+        ? '<p class="text-slate-500">Belum ada transaksi hari ini.</p>'
+        : state.transaksi.map(t => `
+          <div class="bg-slate-900 p-2 rounded border border-slate-800 flex justify-between">
+            <div><span class="font-bold text-white">${t.warung}</span> <span class="text-slate-400">(${t.waktu})</span></div>
+            <div class="text-right"><span class="font-bold text-emerald-400">${rupiah(t.total)}</span> <span class="text-[10px] text-slate-400">[${t.metode}]</span></div>
+          </div>`).join('');
+    }
+
+    function kirimRekapWA() {
+      const tunai = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((s, t) => s + t.total, 0);
+      const tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((s, t) => s + t.total, 0);
+      const bon = state.transaksi.filter(t => t.metode === 'BON').reduce((s, t) => s + t.total, 0);
+      const sisaStok = state.produk.map(p => `- ${p.nama}: ${p.stok} (BS: ${p.bs})`).join('\n');
+      const teks = `*REKAP SETORAN KANVAS LINK BOLD*\nTanggal: ${new Date().toLocaleDateString('id-ID')}\nSales: Denis (Rute Selatan)\n\n*Keuangan:*\n- Cash Setor: ${rupiah(tunai)}\n- Transfer: ${rupiah(tf)}\n- Bon Baru: ${rupiah(bon)}\n- Total Omzet: ${rupiah(tunai + tf + bon)}\n- Bonus Keluar: ${state.bonusKeluar} Bks\n\n*Sisa Stok Mobil:*\n${sisaStok}`;
+      window.open('https://wa.me/?text=' + encodeURIComponent(teks), '_blank');
+    }
+
+    function resetHariBaru() {
+      if (confirm('Reset transaksi harian dan bonus untuk mulai hari baru? (Data warung & piutang tetap tersimpan)')) {
+        state.transaksi = [];
+        state.bonusKeluar = 0;
+        saveState();
+      }
+    }
+
+    function renderAll() {
+      document.getElementById('tglHariIni').textContent = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      renderKasir();
+      renderStok();
+      renderWarung();
+      renderRekap();
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+    renderAll();
+  </script>
 </body>
 </html>
