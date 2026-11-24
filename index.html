@@ -70,7 +70,29 @@
       <button onclick="tutupBukuDanArsipkan()" class="w-full bg-amber-50 border border-amber-200 text-amber-800 font-bold py-2.5 rounded-xl text-xs">🔒 Tutup Buku & Arsipkan Hari Ini</button>
     </div>
     <div class="bg-white rounded-2xl p-3.5 border"><h3 class="text-xs font-extrabold mb-2">Barang Terjual Hari Ini</h3><div id="rekapProdukTerjual" class="space-y-1.5 text-xs"></div></div>
-    <div class="bg-white rounded-2xl p-3.5 border space-y-2"><div class="flex justify-between items-center border-b pb-2"><h3 class="text-xs font-extrabold">Riwayat per Hari</h3><p id="totalAkumulasiSemuaHari" class="text-xs font-black text-blue-600">Rp 0</p></div><div id="arsipHarianList" class="space-y-1.5 text-xs"></div></div>
+    <div class="bg-white rounded-2xl p-3.5 border space-y-2.5">
+      <div class="flex justify-between items-center border-b pb-2">
+        <div>
+          <h3 class="text-xs font-extrabold">Laporan Penjualan 1 Bulan</h3>
+          <p class="text-[10px] text-slate-500">Rekap akumulasi harian & bulanan</p>
+        </div>
+        <select id="pilihBulanLaporan" onchange="renderSetoran()" class="bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-800"></select>
+      </div>
+      <div class="grid grid-cols-3 gap-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center">
+        <div><p class="text-[9px] text-slate-400 font-bold uppercase">Omzet Bulan Ini</p><p id="omzetBulananVal" class="text-xs font-black text-emerald-600 mt-0.5">Rp 0</p></div>
+        <div><p class="text-[9px] text-slate-400 font-bold uppercase">Total Nota</p><p id="notaBulananVal" class="text-xs font-black text-slate-800 mt-0.5">0</p></div>
+        <div><p class="text-[9px] text-slate-400 font-bold uppercase">Komisi Bulan</p><p id="komisiBulananVal" class="text-xs font-black text-amber-600 mt-0.5">Rp 0</p></div>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5">
+        <button onclick="kirimLaporanBulananWA()" class="bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold py-2 rounded-xl text-[11px]">📲 WA Rekap 1 Bulan</button>
+        <button onclick="exportBulananCSV()" class="bg-blue-50 border border-blue-200 text-blue-700 font-bold py-2 rounded-xl text-[11px]">📊 Excel/CSV 1 Bulan</button>
+      </div>
+      <div id="arsipHarianList" class="space-y-1.5 text-xs pt-1"></div>
+      <div class="flex justify-between items-center border-t pt-2 text-[11px]">
+        <span class="text-slate-500 font-semibold">Total Semua Waktu:</span>
+        <span id="totalAkumulasiSemuaHari" class="font-black text-blue-600">Rp 0</span>
+      </div>
+    </div>
     <div class="bg-white rounded-2xl p-3.5 border"><h3 class="text-xs font-extrabold mb-2">Riwayat Nota Hari Ini</h3><div id="riwayatNotaList" class="space-y-2 text-xs"></div></div>
   </div>
   <div id="modalProfilSales" class="hidden fixed inset-0 bg-slate-950/75 z-50 flex items-end justify-center">
@@ -269,11 +291,64 @@
       document.getElementById('ringkasanKeuangan').innerHTML = `<div class="flex justify-between"><span>Setoran Cash:</span><strong class="text-emerald-600">${rp(tun)}</strong></div><div class="flex justify-between"><span>Transfer / QRIS:</span><strong class="text-blue-600">${rp(tf)}</strong></div><div class="flex justify-between"><span>Penjualan Bon:</span><strong class="text-amber-600">${rp(bon)}</strong></div><div class="flex justify-between border-t pt-1"><span>Total Penjualan:</span><strong>${rp(omz)}</strong></div><div class="flex justify-between"><span>Bonus Keluar:</span><strong>${state.bonusKeluar} Bks</strong></div>`;
       const sm = {}; state.transaksi.forEach(t => (t.items || []).forEach(it => { if (!sm[it.sku]) sm[it.sku] = { n: it.nama, q: 0, t: 0 }; sm[it.sku].q += it.qty; sm[it.sku].t += it.subtotal; }));
       document.getElementById('rekapProdukTerjual').innerHTML = Object.keys(sm).map(k => `<div class="flex justify-between bg-slate-50 p-2 rounded-lg"><span><strong>${k}</strong> • ${sm[k].n}</span><span><strong>${sm[k].q}x</strong> (${rp(sm[k].t)})</span></div>`).join('') || '<p class="text-slate-400">Belum ada produk terjual.</p>';
-      const ar = state.arsipHarian || []; document.getElementById('totalAkumulasiSemuaHari').textContent = rp(ar.reduce((a, b) => a + b.omzet, 0) + omz);
-      document.getElementById('arsipHarianList').innerHTML = ar.map(a => `<div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border"><div><p class="font-bold">${a.tanggal}</p><p class="text-[10px] text-slate-500">${a.jumlahNota} Nota • Komisi: ${rp(a.komisi)}</p></div><span class="font-black text-emerald-700">${rp(a.omzet)}</span></div>`).join('') || '<p class="text-slate-400">Belum ada arsip.</p>';
+      const ar = state.arsipHarian || [];
+      const curMonth = new Date().toISOString().slice(0, 7);
+      const selBln = document.getElementById('pilihBulanLaporan');
+      const monthsSet = new Set([curMonth, ...ar.map(x => x.bulanKey || curMonth)]);
+      const prevBln = selBln.value || curMonth;
+      selBln.innerHTML = Array.from(monthsSet).sort().reverse().map(m => {
+        const [y, mo] = m.split('-');
+        const label = new Date(y, parseInt(mo)-1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        return `<option value="${m}">${label}</option>`;
+      }).join('');
+      selBln.value = monthsSet.has(prevBln) ? prevBln : curMonth;
+      const activeBln = selBln.value;
+      const arFiltered = ar.filter(x => (x.bulanKey || curMonth) === activeBln);
+      const isCurBln = activeBln === curMonth;
+      const omzBulan = arFiltered.reduce((a, b) => a + b.omzet, 0) + (isCurBln ? omz : 0);
+      const notaBulan = arFiltered.reduce((a, b) => a + b.jumlahNota, 0) + (isCurBln ? state.transaksi.length : 0);
+      const komBulan = arFiltered.reduce((a, b) => a + b.komisi, 0) + (isCurBln ? kom : 0);
+      document.getElementById('omzetBulananVal').textContent = rp(omzBulan);
+      document.getElementById('notaBulananVal').textContent = notaBulan + ' Nota';
+      document.getElementById('komisiBulananVal').textContent = rp(komBulan);
+      document.getElementById('totalAkumulasiSemuaHari').textContent = rp(ar.reduce((a, b) => a + b.omzet, 0) + omz);
+      document.getElementById('arsipHarianList').innerHTML = arFiltered.map(a => `<div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border"><div><p class="font-bold">${a.tanggal}</p><p class="text-[10px] text-slate-500">${a.jumlahNota} Nota • Komisi: ${rp(a.komisi)}</p></div><span class="font-black text-emerald-700">${rp(a.omzet)}</span></div>`).join('') || '<p class="text-slate-400">Belum ada arsip.</p>';
       document.getElementById('riwayatNotaList').innerHTML = state.transaksi.map((t, i) => `<div class="bg-slate-50 p-2.5 rounded-xl flex justify-between items-center border"><div><p class="font-bold">${t.warung} (${t.noFaktur})</p><p class="text-[10px] text-slate-500">${t.waktu} • ${t.metode} • ${rp(t.total)}</p></div><button onclick="reprintNota(${i})" class="bg-[#0F172A] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg">🖨️ Print</button></div>`).join('') || '<p class="text-slate-400">Belum ada transaksi.</p>';
     }
-    function tutupBukuDanArsipkan() { if (!state.transaksi.length) return alert('Belum ada transaksi.'); if (!confirm('Arsipkan hari ini?')) return; const omz = state.transaksi.reduce((a, b) => a + b.total, 0), kom = Math.round(omz * ((state.komisiPersen ?? 2) / 100)); if (!state.arsipHarian) state.arsipHarian = []; state.arsipHarian.unshift({ tanggal: new Date().toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }), jumlahNota: state.transaksi.length, omzet: omz, komisi: kom }); state.transaksi = []; state.bonusKeluar = 0; save(); }
+    
+    function kirimLaporanBulananWA() {
+      const sel = document.getElementById('pilihBulanLaporan');
+      const labelBln = sel.options[sel.selectedIndex]?.text || 'Bulan Ini';
+      const activeBln = sel.value;
+      const curMonth = new Date().toISOString().slice(0, 7);
+      const arFiltered = (state.arsipHarian || []).filter(x => (x.bulanKey || curMonth) === activeBln);
+      const omzHari = activeBln === curMonth ? state.transaksi.reduce((a, b) => a + b.total, 0) : 0;
+      const notaHari = activeBln === curMonth ? state.transaksi.length : 0;
+      const omzTotal = arFiltered.reduce((a, b) => a + b.omzet, 0) + omzHari;
+      const notaTotal = arFiltered.reduce((a, b) => a + b.jumlahNota, 0) + notaHari;
+      const rincian = arFiltered.map(a => `- ${a.tanggal}: ${rp(a.omzet)} (${a.jumlahNota} nota)`).join('\n');
+      const msg = `*LAPORAN PENJUALAN 1 BULAN*\nPeriode: ${labelBln}\nSales: ${state.salesName} (${state.salesId})\nRute: ${state.rute}\n\n*Total Omzet 1 Bulan: ${rp(omzTotal)}*\nTotal Transaksi: ${notaTotal} Nota\n\n*Rincian per Tanggal:*\n${rincian || '- Hari berjalan: ' + rp(omzHari)}`;
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    }
+    function exportBulananCSV() {
+      const sel = document.getElementById('pilihBulanLaporan');
+      const activeBln = sel.value;
+      const curMonth = new Date().toISOString().slice(0, 7);
+      const arFiltered = (state.arsipHarian || []).filter(x => (x.bulanKey || curMonth) === activeBln);
+      let csv = 'Tanggal,Jumlah Nota,Total Omzet (Rp),Komisi Sales (Rp)\n';
+      if (activeBln === curMonth && state.transaksi.length > 0) {
+        const omzH = state.transaksi.reduce((a, b) => a + b.total, 0);
+        const komH = Math.round(omzH * ((state.komisiPersen ?? 2) / 100));
+        csv += `"Hari Ini (Berjalan)",${state.transaksi.length},${omzH},${komH}\n`;
+      }
+      arFiltered.forEach(a => { csv += `"${a.tanggal}",${a.jumlahNota},${a.omzet},${a.komisi}\n`; });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+      a.download = `Rekap_Bulanan_LinkBold_${activeBln}.csv`;
+      a.click();
+    }
+
+    function tutupBukuDanArsipkan() { if (!state.transaksi.length) return alert('Belum ada transaksi.'); if (!confirm('Arsipkan hari ini?')) return; const omz = state.transaksi.reduce((a, b) => a + b.total, 0), kom = Math.round(omz * ((state.komisiPersen ?? 2) / 100)); if (!state.arsipHarian) state.arsipHarian = []; const nowD = new Date(); const bKey = nowD.toISOString().slice(0, 7); state.arsipHarian.unshift({ bulanKey: bKey, tanggal: nowD.toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }), jumlahNota: state.transaksi.length, omzet: omz, komisi: kom }); state.transaksi = []; state.bonusKeluar = 0; save(); }
     function exportCSV() { if (!state.transaksi.length) return alert('Belum ada data.'); let csv = 'No Faktur,Tanggal,Waktu,Warung,Metode,Total\n'; state.transaksi.forEach(t => { csv += `"${t.noFaktur}","${t.tanggal}","${t.waktu}","${t.warung}","${t.metode}",${t.total}\n`; }); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `Laporan_${new Date().toISOString().slice(0,10)}.csv`; a.click(); }
     function printLaporanRPP02N() { const tun = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((a, b) => a + b.total, 0), tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((a, b) => a + b.total, 0), bon = state.transaksi.filter(t => t.metode === 'BON').reduce((a, b) => a + b.total, 0), ln = '--------------------------------\n'; let out = '   LAPORAN SETORAN MOTORIS\n       LINK BOLD CANVAS\n' + ln + `Sales: ${state.salesName} (${state.salesId})\n` + ln + padLR('Cash', rp(tun)) + '\n' + padLR('Transfer', rp(tf)) + '\n' + padLR('Bon', rp(bon)) + '\n' + padLR('TOTAL', rp(tun + tf + bon)) + '\n' + ln; cetakKeRPP02N(out + '\n\n\n'); }
     function kirimRekapWA() { const tun = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((a, b) => a + b.total, 0), tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((a, b) => a + b.total, 0), bon = state.transaksi.filter(t => t.metode === 'BON').reduce((a, b) => a + b.total, 0); window.open('https://wa.me/?text=' + encodeURIComponent(`*SETORAN MOTORIS*\nSales: ${state.salesName} (${state.salesId})\nMotor: ${state.salesMotor}\nCash: ${rp(tun)}\nTransfer: ${rp(tf)}\nBon: ${rp(bon)}\n*Total: ${rp(tun + tf + bon)}*`), '_blank'); }
