@@ -68,6 +68,7 @@
       t.metode = metVia;
       t.bayar = t.total;
       t.dilunasiPada = tglSkrg;
+      t.lunasDariKredit = true;
       alert(`✅ Piutang ${t.noFaktur} (${t.warung}) LUNAS SEPENUHNYA!`);
     } else {
       alert(`✅ Cicilan ${rp(bayarCicil)} (${metVia}) dicatat!\nSisa piutang ${t.warung}: ${rp(t.sisaPiutang)}`);
@@ -79,12 +80,20 @@
     const listEl = document.getElementById('riwayatNotaList');
     if (!listEl) return;
     state.transaksi.forEach((t, i) => {
-      if (t.metode !== 'BON' && Array.isArray(t.cicilan) && t.cicilan.length > 0) {
+      if (t.metode !== 'BON' && (t.lunasDariKredit || (Array.isArray(t.cicilan) && t.cicilan.length > 0))) {
         const card = listEl.children[i];
-        const infoP = card?.querySelector('p.text-\\[10px\\].text-slate-500');
-        if (infoP && !infoP.dataset.kreditEnhanced) {
-          infoP.dataset.kreditEnhanced = '1';
-          infoP.innerHTML += `<br><span class="text-emerald-700 font-bold">✓ Lunas via ${t.cicilan.length}x cicilan: ${t.cicilan.map(c => rp(c.jumlah) + ' (' + c.tgl + ')').join(', ')}</span>`;
+        if (card) {
+          card.className = 'p-2.5 rounded-xl border border-blue-300 bg-blue-50/40 space-y-2';
+          const badgeEl = card.querySelector('span.rounded-full');
+          if (badgeEl) {
+            badgeEl.className = 'inline-flex items-center gap-1.5 bg-blue-100 text-blue-800 border border-blue-300 text-[9px] font-extrabold px-2 py-0.5 rounded-full';
+            badgeEl.innerHTML = '<span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-600 shadow-[0_0_6px_#2563eb]"></span></span>LUNAS (KREDIT)';
+          }
+          const infoP = card.querySelector('p.text-\\[10px\\].text-slate-500');
+          if (infoP && !infoP.dataset.kreditEnhanced && Array.isArray(t.cicilan) && t.cicilan.length > 0) {
+            infoP.dataset.kreditEnhanced = '1';
+            infoP.innerHTML += `<br><span class="text-blue-700 font-bold">✓ Lunas via ${t.cicilan.length}x cicilan: ${t.cicilan.map(c => rp(c.jumlah) + ' (' + c.tgl + ')').join(', ')}</span>`;
+          }
         }
       }
       if (t.metode === 'BON') {
