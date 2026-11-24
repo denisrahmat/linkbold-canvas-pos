@@ -293,6 +293,20 @@
       else if (act === 'WA') window.open('https://wa.me/?text=' + encodeURIComponent(`*NOTA LINK BOLD*\nNo: ${trx.noFaktur}\nWarung: ${trx.warung}\nBayar: ${trx.metode}\n${items.map(i => `- ${i.nama} x${i.qty} = ${rp(i.subtotal)}`).join('\n')}\n*TOTAL: ${rp(trx.total)}*\nSales: ${state.salesName}`), '_blank');
     }
     
+    function lunasiNotaKredit(i) {
+      const t = state.transaksi[i];
+      if (!t || t.metode !== 'BON') return;
+      const via = prompt(`Lunasi faktur ${t.noFaktur} (${t.warung}) sebesar ${rp(t.total)}.\nKetik 1 untuk TUNAI, atau 2 untuk TRANSFER:`, '1');
+      if (!via) return;
+      t.metode = via.trim() === '2' ? 'TRANSFER' : 'TUNAI';
+      t.bayar = t.total;
+      t.kembali = 0;
+      t.dilunasiPada = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const w = state.warung.find(x => x.nama === t.warung);
+      if (w) w.piutang = Math.max(0, (w.piutang || 0) - t.total);
+      save();
+      alert(`Faktur ${t.noFaktur} sekarang berstatus LUNAS (${t.metode})!`);
+    }
     function kirimWaNotaIdx(i) {
       const t = state.transaksi[i]; if (!t) return;
       const r = (t.items || []).map(x => `- ${x.nama} x${x.qty} = ${rp(x.subtotal)}`).join('\n');
@@ -310,7 +324,7 @@
       const tun = state.transaksi.filter(t => t.metode === 'TUNAI').reduce((a, b) => a + b.total, 0), tf = state.transaksi.filter(t => t.metode === 'TRANSFER').reduce((a, b) => a + b.total, 0), qris = state.transaksi.filter(t => t.metode === 'QRIS').reduce((a, b) => a + b.total, 0), bon = state.transaksi.filter(t => t.metode === 'BON').reduce((a, b) => a + b.total, 0), omz = tun + tf + qris + bon, trg = state.targetHarian || 5000000, kp = state.komisiPersen ?? 2, kom = Math.round(omz * (kp / 100));
       document.getElementById('analitikOmzetHari').textContent = rp(omz); document.getElementById('targetProgressBar').style.width = Math.min(100, Math.round((omz / trg) * 100)) + '%';
       document.getElementById('targetPersenLabel').textContent = `${Math.min(100, Math.round((omz / trg) * 100))}% dari Target ${rp(trg)}`; document.getElementById('komisiPersenLabel').textContent = kp; document.getElementById('analitikKomisiHari').textContent = rp(kom);
-      document.getElementById('ringkasanKeuangan').innerHTML = `<div class="flex justify-between"><span>Setoran Cash:</span><strong class="text-emerald-600">${rp(tun)}</strong></div><div class="flex justify-between"><span>Transfer Bank:</span><strong class="text-blue-600">${rp(tf)}</strong></div><div class="flex justify-between"><span>Pembayaran QRIS:</span><strong class="text-indigo-600">${rp(qris)}</strong></div><div class="flex justify-between"><span>Penjualan Bon:</span><strong class="text-amber-600">${rp(bon)}</strong></div><div class="flex justify-between border-t pt-1"><span>Total Penjualan:</span><strong>${rp(omz)}</strong></div><div class="flex justify-between"><span>Bonus Keluar:</span><strong>${state.bonusKeluar} Bks</strong></div>`;
+      document.getElementById('ringkasanKeuangan').innerHTML = `<div class="flex justify-between"><span>Setoran Cash:</span><strong class="text-emerald-600">${rp(tun)}</strong></div><div class="flex justify-between"><span>Transfer Bank:</span><strong class="text-blue-600">${rp(tf)}</strong></div><div class="flex justify-between"><span>Pembayaran QRIS:</span><strong class="text-indigo-600">${rp(qris)}</strong></div><div class="flex justify-between"><span>Penjualan Bon:</span><strong class="text-amber-600">${rp(bon)}</strong></div><div class="flex justify-between border-t pt-1.5 mt-1"><span class="text-emerald-700 font-semibold">✓ Total Sudah Lunas (${state.transaksi.filter(t=>t.metode!=='BON').length} nota):</span><strong class="text-emerald-700">${rp(omz - bon)}</strong></div><div class="flex justify-between"><span class="text-amber-700 font-semibold">⏳ Total Kredit / Bon (${state.transaksi.filter(t=>t.metode==='BON').length} nota):</span><strong class="text-amber-700">${rp(bon)}</strong></div><div class="flex justify-between border-t pt-1"><span>Total Penjualan:</span><strong>${rp(omz)}</strong></div><div class="flex justify-between"><span>Bonus Keluar:</span><strong>${state.bonusKeluar} Bks</strong></div>`;
       const sm = {}; state.transaksi.forEach(t => (t.items || []).forEach(it => { if (!sm[it.sku]) sm[it.sku] = { n: it.nama, q: 0, t: 0 }; sm[it.sku].q += it.qty; sm[it.sku].t += it.subtotal; }));
       document.getElementById('rekapProdukTerjual').innerHTML = Object.keys(sm).map(k => `<div class="flex justify-between bg-slate-50 p-2 rounded-lg"><span><strong>${k}</strong> • ${sm[k].n}</span><span><strong>${sm[k].q}x</strong> (${rp(sm[k].t)})</span></div>`).join('') || '<p class="text-slate-400">Belum ada produk terjual.</p>';
       const ar = state.arsipHarian || [];
