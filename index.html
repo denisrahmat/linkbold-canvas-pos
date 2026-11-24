@@ -349,7 +349,32 @@
       document.getElementById('komisiBulananVal').textContent = rp(komBulan);
       document.getElementById('totalAkumulasiSemuaHari').textContent = rp(ar.reduce((a, b) => a + b.omzet, 0) + omz);
       document.getElementById('arsipHarianList').innerHTML = arFiltered.map(a => `<div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border"><div><p class="font-bold">${a.tanggal}</p><p class="text-[10px] text-slate-500">${a.jumlahNota} Nota • Komisi: ${rp(a.komisi)}</p></div><span class="font-black text-emerald-700">${rp(a.omzet)}</span></div>`).join('') || '<p class="text-slate-400">Belum ada arsip.</p>';
-      document.getElementById('riwayatNotaList').innerHTML = state.transaksi.map((t, i) => `<div class="bg-slate-50 p-2.5 rounded-xl flex justify-between items-center border"><div><p class="font-bold">${t.warung} (${t.noFaktur})</p><p class="text-[10px] text-slate-500">${t.waktu} • ${t.metode} • ${rp(t.total)}</p></div><div class="flex gap-1"><button onclick="bukaKwitansiFaktur(${i})" class="bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg">🧾 Kwitansi</button><button onclick="kirimWaNotaIdx(${i})" class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-1.5 rounded-lg">📲 WA</button><button onclick="reprintNota(${i})" class="bg-[#0F172A] text-white text-[10px] font-bold px-2 py-1.5 rounded-lg">🖨️ Print</button></div></div>`).join('') || '<p class="text-slate-400">Belum ada transaksi.</p>';
+      document.getElementById('riwayatNotaList').innerHTML = state.transaksi.map((t, i) => {
+        const isBon = t.metode === 'BON';
+        const ledSignal = isBon
+          ? '<span class="inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[9px] font-extrabold px-2 py-0.5 rounded-full"><span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600 shadow-[0_0_6px_#dc2626]"></span></span>PIUTANG / BON</span>'
+          : '<span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-extrabold px-2 py-0.5 rounded-full"><span class="relative flex h-2.5 w-2.5"><span class="animate-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_6px_#10b981]"></span></span>LUNAS</span>';
+        const btnLunasi = isBon
+          ? `<button onclick="lunasiNotaKredit(${i})" class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-1.5 rounded-lg shadow-sm">✓ Lunasi</button>`
+          : '';
+        return `<div class="p-2.5 rounded-xl border ${isBon ? 'border-red-300 bg-red-50/30' : 'border-slate-200 bg-slate-50'} space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <p class="font-bold text-slate-900">${t.warung} <span class="text-[10px] font-mono text-slate-400">(${t.noFaktur})</span></p>
+                ${ledSignal}
+              </div>
+              <p class="text-[10px] text-slate-500 mt-0.5">${t.waktu} • ${t.metode}${t.dilunasiPada ? ' (Lunas ' + t.dilunasiPada + ')' : ''} • <strong class="text-slate-800">${rp(t.total)}</strong></p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-1 pt-1 border-t border-slate-200/70">
+            ${btnLunasi}
+            <button onclick="bukaKwitansiFaktur(${i})" class="bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg">🧾 Kwitansi</button>
+            <button onclick="kirimWaNotaIdx(${i})" class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg">📲 WA</button>
+            <button onclick="reprintNota(${i})" class="bg-[#0F172A] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg">🖨️ Print</button>
+          </div>
+        </div>`;
+      }).join('') || '<p class="text-slate-400">Belum ada transaksi.</p>';
     }
     
     function kirimLaporanBulananWA() {
