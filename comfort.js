@@ -1,33 +1,63 @@
 (function(){
-  // 1. Tombol Header: Audio Instrumental Santai & Mode Layar Terang Outdoor
   const hdrRight = document.querySelector('header .flex.items-center.gap-2');
   let audioCtx = null, isPlaying = false, seqTimer = null;
-  const toggleMusic = (btn) => {
+
+  const toggleMusic = async (btn) => {
     if (isPlaying) {
-      isPlaying = false; clearInterval(seqTimer);
-      btn.textContent = '🎵 Santai'; btn.className = 'bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold px-2 py-1 rounded-lg';
+      isPlaying = false;
+      clearInterval(seqTimer);
+      btn.textContent = '🎵 Santai';
+      btn.className = 'bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold px-2 py-1 rounded-lg';
       return;
     }
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    isPlaying = true; btn.textContent = '⏸️ Stop'; btn.className = 'bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-lg animate-pulse';
-    const chords = [[261.6,329.6,392.0],[220.0,261.6,329.6],[174.6,220.0,261.6],[196.0,246.9,293.7]];
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+    isPlaying = true;
+    btn.textContent = '⏸️ Stop';
+    btn.className = 'bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-lg animate-pulse';
+
+    // Progresi chord santai & bass hangat dengan volume jelas (gain 0.22)
+    const chords = [
+      { bass: 130.81, notes: [261.63, 329.63, 392.00] }, // C
+      { bass: 110.00, notes: [220.00, 261.63, 329.63] }, // Am
+      { bass: 87.31,  notes: [174.61, 220.00, 261.63] }, // F
+      { bass: 98.00,  notes: [196.00, 246.94, 293.66] }  // G
+    ];
     let step = 0;
     const playBeat = () => {
       if (!isPlaying) return;
       const now = audioCtx.currentTime;
+      const bar = chords[Math.floor(step / 4) % chords.length];
+
+      // Ketukan Bass lembut pada hitungan 0 & 2
+      if (step % 2 === 0) {
+        const bOsc = audioCtx.createOscillator(), bGain = audioCtx.createGain();
+        bOsc.type = 'sine';
+        bOsc.frequency.setValueAtTime(bar.bass, now);
+        bGain.gain.setValueAtTime(0.24, now);
+        bGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        bOsc.connect(bGain); bGain.connect(audioCtx.destination);
+        bOsc.start(now); bOsc.stop(now + 0.36);
+      }
+
+      // Petikan off-beat reggae akustik pada hitungan 1 & 3
       if (step % 2 === 1) {
-        chords[Math.floor(step / 4) % chords.length].forEach(freq => {
+        bar.notes.forEach(freq => {
           const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
-          osc.type = 'triangle'; osc.frequency.value = freq;
-          g.gain.setValueAtTime(0.03, now); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          g.gain.setValueAtTime(0.14, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
           osc.connect(g); g.connect(audioCtx.destination);
-          osc.start(now); osc.stop(now + 0.26);
+          osc.start(now); osc.stop(now + 0.29);
         });
       }
       step++;
     };
-    playBeat(); seqTimer = setInterval(playBeat, 420);
+    playBeat();
+    seqTimer = setInterval(playBeat, 430);
   };
 
   if (hdrRight) {
@@ -44,13 +74,15 @@
     };
   }
 
-  // 2. Pintasan Maps, Chat WA Warung Aktif, & Catat Kunjungan Tanpa Order
-  const gantiBtn = document.querySelector('button[onclick*="warungModal"]');
-  if (gantiBtn && gantiBtn.parentNode) {
+  // Tempelkan bar pintasan langsung di dalam kotak WARUNG AKTIF
+  const gantiBtn = Array.from(document.querySelectorAll('header button')).find(b => b.textContent.includes('Ganti Warung'));
+  const warungCard = gantiBtn ? gantiBtn.parentElement.parentElement : null;
+  if (warungCard && !document.getElementById('quickWarungBar')) {
     const quickBar = document.createElement('div');
-    quickBar.className = 'flex gap-1.5 mt-2 pt-2 border-t border-slate-800';
-    quickBar.innerHTML = `<button type="button" id="btnQuickMaps" class="flex-1 bg-slate-800/90 text-sky-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">📍 Buka Maps</button><button type="button" id="btnQuickWaWarung" class="flex-1 bg-slate-800/90 text-emerald-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">💬 Chat WA</button><button type="button" id="btnCatatVisit" class="flex-1 bg-amber-500/20 text-amber-300 text-[10px] font-bold py-1.5 rounded-lg border border-amber-500/40">📝 Visit No-Order</button>`;
-    gantiBtn.closest('.bg-slate-900\\/90, .rounded-2xl')?.appendChild(quickBar);
+    quickBar.id = 'quickWarungBar';
+    quickBar.className = 'grid grid-cols-3 gap-1.5 mt-2 pt-2 border-t border-slate-800';
+    quickBar.innerHTML = `<button type="button" id="btnQuickMaps" class="bg-slate-800 text-sky-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">📍 Buka Maps</button><button type="button" id="btnQuickWaWarung" class="bg-slate-800 text-emerald-300 text-[10px] font-bold py-1.5 rounded-lg border border-slate-700">💬 Chat WA</button><button type="button" id="btnCatatVisit" class="bg-amber-500/20 text-amber-300 text-[10px] font-bold py-1.5 rounded-lg border border-amber-500/40">📝 Visit No-Order</button>`;
+    warungCard.appendChild(quickBar);
 
     const getActiveWarung = () => (state.warung || []).find(w => w.nama === state.activeWarung) || { nama: state.activeWarung || 'Warung' };
 
@@ -70,7 +102,7 @@
 
     document.getElementById('btnCatatVisit').onclick = () => {
       const w = getActiveWarung();
-      const pil = prompt(`CATAT KUNJUNGAN TANPA ORDER\nWarung: ${w.nama}\n\nPilih alasan (ketik angka 1-4):\n1. Stok Masih Banyak\n2. Toko Sedang Tutup\n3. Janji Order Kunjungan Berikutnya\n4. Pemilik Tidak Di Tempat`, '1');
+      const pil = prompt(`CATAT KUNJUNGAN TANPA ORDER\nWarung: ${w.nama}\n\nPilih alasan (ketik 1-4):\n1. Stok Masih Banyak\n2. Toko Sedang Tutup\n3. Janji Order Kunjungan Berikutnya\n4. Pemilik Tidak Di Tempat`, '1');
       if (!pil) return;
       const mapAlasan = { '1': 'Stok Masih Banyak', '2': 'Toko Tutup', '3': 'Janji Order Besok', '4': 'Pemilik Tidak Ada' };
       const ket = mapAlasan[pil.trim()] || pil.trim();
@@ -85,10 +117,11 @@
     };
   }
 
-  // 3. Biaya Operasional Harian & Rekap Kunjungan di Tab Analitik & Setor
+  // Biaya Operasional Harian & Rekap Kunjungan di Tab Analitik & Setor
   const tutupBtn = document.querySelector('button[onclick="tutupBukuDanArsipkan()"]');
-  if (tutupBtn && tutupBtn.parentNode) {
+  if (tutupBtn && tutupBtn.parentNode && !document.getElementById('opsRuteBox')) {
     const opsBox = document.createElement('div');
+    opsBox.id = 'opsRuteBox';
     opsBox.className = 'bg-amber-50/70 border border-amber-200 rounded-xl p-2.5 space-y-1.5 text-xs';
     opsBox.innerHTML = `<div class="flex justify-between items-center"><span class="font-extrabold text-slate-800">⛽ Biaya Operasional Rute</span><button type="button" id="btnTambahOps" class="bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-lg">+ Catat Biaya</button></div><div id="listOpsHarian" class="text-[10px] text-slate-600 space-y-0.5"></div><div class="flex justify-between border-t border-amber-200 pt-1 font-black text-emerald-700"><span>Setoran Tunai Bersih:</span><span id="valSetoranBersih">Rp 0</span></div><div id="boxVisitSummary" class="text-[10px] text-slate-500 pt-1 border-t border-dashed border-amber-200"></div>`;
     tutupBtn.parentNode.insertBefore(opsBox, tutupBtn);
