@@ -153,6 +153,7 @@
     <button onclick="switchTab('stok')" id="nav-stok" class="flex flex-col items-center text-slate-500 text-[10px] font-semibold"><span>📦</span>Stok & Harga</button>
     <button onclick="switchTab('setoran')" id="nav-setoran" class="flex flex-col items-center text-slate-500 text-[10px] font-semibold"><span>📊</span>Analitik & Setor</button>
   </nav>
+  <script src="kw.js"></script>
   <script>
     const initialCatalog = [
       { sku: 'LB-MRH-20S', barcode: '8990001001', varian: 'Merah', satuan: 'Grosir (Slop)', subLabel: 'Slop (10 Bks)', nama: 'Link Bold Merah (20 Btg) - 1 Slop', harga: 270000, stok: 34, bs: 0 },
@@ -292,101 +293,6 @@
       else window.open('https://wa.me/?text=' + encodeURIComponent(`*NOTA LINK BOLD*\nNo: ${trx.noFaktur}\nWarung: ${trx.warung}\nBayar: ${trx.metode}\n${items.map(i => `- ${i.nama} x${i.qty} = ${rp(i.subtotal)}`).join('\n')}\n*TOTAL: ${rp(trx.total)}*\nSales: ${state.salesName}`), '_blank');
     }
     
-    function angkaTerbilang(n) {
-      const satuan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
-      n = Math.floor(Math.abs(n));
-      if (n < 12) return satuan[n];
-      if (n < 20) return angkaTerbilang(n - 10) + ' Belas';
-      if (n < 100) return angkaTerbilang(Math.floor(n / 10)) + ' Puluh ' + angkaTerbilang(n % 10);
-      if (n < 200) return 'Seratus ' + angkaTerbilang(n - 100);
-      if (n < 1000) return angkaTerbilang(Math.floor(n / 100)) + ' Ratus ' + angkaTerbilang(n % 100);
-      if (n < 2000) return 'Seribu ' + angkaTerbilang(n - 1000);
-      if (n < 1000000) return angkaTerbilang(Math.floor(n / 1000)) + ' Ribu ' + angkaTerbilang(n % 1000);
-      if (n < 1000000000) return angkaTerbilang(Math.floor(n / 1000000)) + ' Juta ' + angkaTerbilang(n % 1000000);
-      return angkaTerbilang(Math.floor(n / 1000000000)) + ' Miliar ' + angkaTerbilang(n % 1000000000);
-    }
-
-    function bukaKwitansiFaktur(idx) {
-      const trx = state.transaksi[idx];
-      if (!trx) return;
-      const noKwt = trx.noFaktur.replace('INV-', 'KWT-');
-      const terbilangTxt = (angkaTerbilang(trx.total).replace(/\s+/g, ' ').trim() || 'Nol') + ' Rupiah';
-      const statusLunas = trx.metode === 'BON' ? 'PIUTANG / BON' : 'LUNAS (' + trx.metode + ')';
-      const statusColor = trx.metode === 'BON' ? 'text-amber-600 border-amber-500' : 'text-emerald-600 border-emerald-500';
-
-      document.getElementById('kwitansiPreviewBox').innerHTML = `
-        <div class="flex justify-between items-start border-b border-slate-200 pb-2">
-          <div>
-            <p class="font-black text-sm text-slate-900">KWITANSI FAKTUR</p>
-            <p class="text-[10px] font-mono text-slate-500">No: ${noKwt} • Ref: ${trx.noFaktur}</p>
-          </div>
-          <span class="border-2 ${statusColor} font-black text-[10px] px-2 py-0.5 rounded uppercase">${statusLunas}</span>
-        </div>
-        <div class="space-y-1 text-[11px]">
-          <p><span class="text-slate-500">Sudah Terima Dari:</span><br><strong class="text-slate-900">${trx.warung}</strong></p>
-          <p><span class="text-slate-500">Tanggal / Waktu:</span> <strong>${trx.tanggal} (${trx.waktu})</strong></p>
-          <p><span class="text-slate-500">Terbilang:</span><br><em class="font-semibold text-slate-800 bg-amber-50 px-1.5 py-0.5 rounded inline-block"># ${terbilangTxt} #</em></p>
-          <p><span class="text-slate-500">Untuk Pembayaran Faktur:</span></p>
-          <div class="bg-white p-2 rounded-lg border border-slate-200 space-y-1">
-            ${(trx.items || []).map(it => `<div class="flex justify-between text-[10px]"><span>${it.nama} (${it.qty}x)</span><strong>${rp(it.subtotal)}</strong></div>`).join('')}
-            ${trx.diskon > 0 ? `<div class="flex justify-between text-[10px] text-red-600"><span>Diskon</span><span>-${rp(trx.diskon)}</span></div>` : ''}
-            <div class="flex justify-between text-xs font-black border-t pt-1"><span>JUMLAH</span><span>${rp(trx.total)}</span></div>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2 pt-3 text-center text-[10px] text-slate-500">
-          <div><p>Penerima / Toko,</p><div class="h-8"></div><p class="font-bold text-slate-800 border-t border-slate-300 pt-0.5">${trx.warung}</p></div>
-          <div><p>Hormat Kami (Sales),</p><div class="h-8"></div><p class="font-bold text-slate-800 border-t border-slate-300 pt-0.5">${state.salesName} (${state.salesId})</p></div>
-        </div>
-      `;
-
-      document.getElementById('btnPrintKwitansi58').onclick = () => {
-        const ln = '================================
-';
-        const dsh = '--------------------------------
-';
-        let out = '        KWITANSI FAKTUR
-       LINK BOLD CANVAS
-' + ln;
-        out += `No Kwt : ${noKwt}
-No Inv : ${trx.noFaktur}
-Tgl    : ${trx.tanggal} ${trx.waktu}
-Status : ${statusLunas}
-` + dsh;
-        out += `Terima Dari:
-${trx.warung}
-` + dsh;
-        out += `Terbilang:
-# ${terbilangTxt} #
-` + dsh;
-        out += `Rincian Faktur:
-`;
-        (trx.items || []).forEach(it => {
-          out += `${it.nama.substring(0, 32)}
-` + padLR(`${it.qty} x ${it.harga.toLocaleString('id-ID')}`, it.subtotal.toLocaleString('id-ID')) + '
-';
-        });
-        out += dsh + padLR('JUMLAH BAYAR', rp(trx.total)) + '
-' + ln;
-        out += 'Penerima,          Sales,
-
-
-';
-        out += padLR('(.........)', `(${state.salesName})`) + '
-
-
-';
-        cetakKeRPP02N(out);
-      };
-
-      document.getElementById('btnWaKwitansi').onclick = () => {
-        const rincian = (trx.items || []).map(i => `- ${i.nama} (${i.qty}x) = ${rp(i.subtotal)}`).join('\n');
-        const msg = `*KWITANSI FAKTUR PENJUALAN*\n*LINK BOLD CANVAS*\n\nNo. Kwitansi: *${noKwt}*\nNo. Faktur: ${trx.noFaktur}\nTanggal: ${trx.tanggal} (${trx.waktu})\nStatus: *${statusLunas}*\n\nSudah Terima Dari:\n*${trx.warung}*\n\nSejumlah Uang:\n*${rp(trx.total)}*\n_(${terbilangTxt})_\n\nRincian Faktur:\n${rincian}\n\nSales Motoris:\n*${state.salesName} (${state.salesId})*`;
-        window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-      };
-
-      document.getElementById('modalKwitansi').classList.remove('hidden');
-    }
-
     function reprintNota(i) { if (state.transaksi[i]) cetakKeRPP02N(formatStruk58mm(state.transaksi[i])); }
     async function bukaScannerBarcode() { document.getElementById('scannerModal').classList.remove('hidden'); try { scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); document.getElementById('scannerVideo').srcObject = scanStream; } catch (e) { tutupScannerBarcode(); } }
     function tutupScannerBarcode() { if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; } document.getElementById('scannerModal').classList.add('hidden'); }
