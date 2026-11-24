@@ -1,0 +1,15 @@
+{
+  "name": "Link Bold Canvas",
+  "short_name": "LinkBold POS",
+  "start_url": "/linkbold-canvas-pos/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
