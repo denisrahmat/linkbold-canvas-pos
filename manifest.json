@@ -1,15 +1,20 @@
 {
+  "id": "/linkbold-canvas-pos/",
   "name": "Link Bold Canvas",
   "short_name": "LinkBold POS",
+  "description": "Aplikasi Kasir Kanvas Sales Link Bold",
   "start_url": "/linkbold-canvas-pos/",
+  "scope": "/linkbold-canvas-pos/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#dc2626",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "https://www.pwabuilder.com/assets/icons/icon_512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
