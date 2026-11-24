@@ -105,3 +105,79 @@
   };
   enhanceKreditCards();
 })();
+
+(function(){
+  const origBukaKw = window.bukaKwitansiFaktur;
+  window.bukaKwitansiFaktur = function(i) {
+    if (typeof origBukaKw === 'function') origBukaKw(i);
+    const t = state.transaksi[i];
+    if (!t) return;
+
+    const hasCicilan = Array.isArray(t.cicilan) && t.cicilan.length > 0;
+    const isBon = t.metode === 'BON';
+    if (!isBon && !hasCicilan) return;
+
+    const sisa = isBon ? (typeof t.sisaPiutang === 'number' ? t.sisaPiutang : t.total) : 0;
+    const terbayar = t.total - sisa;
+    const k = t.noFaktur.replace('INV-', 'KWT-');
+    const tb = (angkaTerbilang(t.total).replace(/\s+/g, ' ').trim() || 'Nol') + ' Rupiah';
+    const st = isBon
+      ? (terbayar > 0 ? `CICILAN (SISA ${rp(sisa)})` : `PIUTANG (JT: ${t.jatuhTempo || '-'})`)
+      : `LUNAS (${t.metode}${hasCicilan ? ' • CICILAN' : ''})`;
+    const cl = isBon ? 'text-amber-600 border-amber-500' : 'text-emerald-600 border-emerald-500';
+
+    const cicilanRowsHtml = hasCicilan
+      ? `<div class="border-t border-dashed border-slate-300 pt-1.5 mt-1.5 space-y-1">
+           <p class="text-[10px] font-extrabold text-slate-700">Riwayat Pembayaran Cicilan:</p>
+           ${t.cicilan.map((c, idx) => `<div class="flex justify-between text-[10px] text-emerald-700"><span>• Cicilan ${idx+1} (${c.tgl} • ${c.via})</span><strong>${rp(c.jumlah)}</strong></div>`).join('')}
+           <div class="flex justify-between text-[10px] font-bold text-slate-800 border-t pt-1"><span>Total Terbayar</span><span class="text-emerald-700">${rp(terbayar)}</span></div>
+           <div class="flex justify-between text-[11px] font-black ${sisa > 0 ? 'text-red-600' : 'text-emerald-700'}"><span>Sisa Tagihan</span><span>${rp(sisa)}</span></div>
+         </div>`
+      : (isBon && t.jatuhTempo ? `<div class="flex justify-between text-[10px] font-bold text-red-600 border-t pt-1 mt-1"><span>Jatuh Tempo Kredit</span><span>${t.jatuhTempo} (${t.tenorLabel || ''})</span></div>` : '');
+
+    document.getElementById('kwitansiPreviewBox').innerHTML = `
+      <div class="flex justify-between items-start border-b pb-2 gap-1">
+        <div><p class="font-black text-sm">KWITANSI FAKTUR</p><p class="text-[10px] font-mono text-slate-500">${k} • Ref: ${t.noFaktur}</p></div>
+        <span class="border-2 ${cl} font-black text-[9px] px-2 py-0.5 rounded text-right">${st}</span>
+      </div>
+      <div class="space-y-1 text-[11px]">
+        <p><span class="text-slate-500">Terima Dari:</span> <strong>${t.warung}</strong></p>
+        <p><span class="text-slate-500">Tanggal:</span> <strong>${t.tanggal} (${t.waktu})</strong></p>
+        <p><span class="text-slate-500">Terbilang:</span> <em class="font-bold bg-amber-50 px-1 rounded"># ${tb} #</em></p>
+        <div class="bg-white p-2 rounded-lg border space-y-1">
+          ${(t.items||[]).map(x=>`<div class="flex justify-between text-[10px]"><span>${x.nama} (${x.qty}x)</span><strong>${rp(x.subtotal)}</strong></div>`).join('')}
+          <div class="flex justify-between text-xs font-black border-t pt-1"><span>TOTAL FAKTUR</span><span>${rp(t.total)}</span></div>
+          ${cicilanRowsHtml}
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-3 text-center text-[10px] text-slate-500">
+        <div><p>Penerima,</p><div class="h-7"></div><p class="font-bold text-slate-800 border-t pt-0.5">${t.warung}</p></div>
+        <div><p>Sales Motoris,</p><div class="h-7"></div><p class="font-bold text-slate-800 border-t pt-0.5">${state.salesName}</p></div>
+      </div>`;
+
+    document.getElementById('btnPrintKwitansi58').onclick = () => {
+      const d = '--------------------------------\n';
+      let o = '        KWITANSI FAKTUR\n       LINK BOLD CANVAS\n' + d + `No : ${k}\nTgl: ${t.tanggal} ${t.waktu}\nSts: ${st}\nToko: ${t.warung}\n` + d;
+      (t.items||[]).forEach(x => { o += `${x.nama.slice(0,32)}\n` + padLR(`${x.qty}x${x.harga}`, x.subtotal) + '\n'; });
+      o += d + padLR('TOTAL FAKTUR', rp(t.total)) + '\n';
+      if (hasCicilan) {
+        o += d + 'RIWAYAT CICILAN:\n';
+        t.cicilan.forEach((c, idx) => { o += padLR(`#${idx+1} ${c.tgl} (${c.via})`, rp(c.jumlah)) + '\n'; });
+        o += padLR('Total Terbayar', rp(terbayar)) + '\n';
+        o += padLR('SISA TAGIHAN', rp(sisa)) + '\n';
+      } else if (t.jatuhTempo) {
+        o += padLR('Jatuh Tempo', t.jatuhTempo) + '\n';
+      }
+      o += d + 'Penerima,          Sales,\n\n\n' + padLR('(.......)', `(${state.salesName})`) + '\n\n\n';
+      cetakKeRPP02N(o);
+    };
+
+    document.getElementById('btnWaKwitansi').onclick = () => {
+      const r = (t.items||[]).map(x => `- ${x.nama} (${x.qty}x) = ${rp(x.subtotal)}`).join('\n');
+      const cicilWa = hasCicilan
+        ? `\n\n*Riwayat Pembayaran Cicilan:*\n` + t.cicilan.map((c, idx) => `${idx+1}. ${c.tgl} (${c.via}): ${rp(c.jumlah)}`).join('\n') + `\n*Total Terbayar: ${rp(terbayar)}*\n*Sisa Piutang: ${rp(sisa)}*`
+        : (t.jatuhTempo ? `\nJatuh Tempo: *${t.jatuhTempo}*` : '');
+      window.open('https://wa.me/?text=' + encodeURIComponent(`*KWITANSI FAKTUR*\nNo: ${k}\nFaktur: ${t.noFaktur}\nToko: *${t.warung}*\nStatus: *${st}*\nTotal Faktur: *${rp(t.total)}*\n_(${tb})_\n\nRincian:\n${r}${cicilWa}\n\nSales: ${state.salesName}`), '_blank');
+    };
+  };
+})();
